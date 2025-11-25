@@ -1,21 +1,18 @@
 export interface Player {
-    id: string;
-    name: string;
-    isReady: boolean;
-};
-
-export interface Team {
-    id: string;
-    players: [Player, Player];
+  id: string;
+  name: string;
+  isReady: boolean;
 }
 
+export type Team = [Player, Player];
+
 export interface Room {
-    id: string;
-    name: string;
-    teams: [Team, Team]
-};
+  id: string;
+  name: string;
+  teams: [Team, Team];
+}
 
 export interface ShowRoomInfo {
-    show: boolean;
-    roomId?: string;
-};
+  show: boolean;
+  roomId?: string;
+}

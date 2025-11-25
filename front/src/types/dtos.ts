@@ -1,34 +1,34 @@
 export interface CreateRoomDTO {
-    name: string;
-    leaderName: string;
-};
+  roomName: string;
+  playerName: string;
+}
 
 export interface TeamDTO {
-    players: [RoomPlayerRequestDTO, RoomPlayerRequestDTO];
+  players: [RoomPlayerRequestDTO, RoomPlayerRequestDTO];
 }
 
 export interface RoomDTO {
-    id: string;
-    name: string;
-    teams: [TeamDTO, TeamDTO];
-};
+  id: string;
+  name: string;
+  teams: [TeamDTO, TeamDTO];
+}
 
 export interface RoomPlayerResponseDTO {
-    name: string;
+  name: string;
 }
 
 export interface RoomPlayerRequestDTO {
-    id: string;
-    name: string;
-    isReady: boolean;
-};
+  id: string;
+  name: string;
+  isReady: boolean;
+}
 
 export interface JoinRoomDTO {
-    roomId: string;
-    playerName: string;
-};
+  roomId: string;
+  playerName: string;
+}
 
 export interface LeaveRoomDTO {
-    roomId: string;
-    playerName: string;
-};
+  roomId: string;
+  playerName: string;
+}
