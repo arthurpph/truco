@@ -14,9 +14,11 @@ import { PlayerService } from 'src/player/player.service';
 import { LeaveRoomDto } from './dtos/leave-room.dto.in';
 import { ToggleIsReadyDto } from './dtos/toogle-is-ready.dto.in';
 import { RoomDtoOut } from './dtos/room.dto.out';
+import { OnGatewayConnection } from '@nestjs/websockets';
+import { OnGatewayDisconnect } from '@nestjs/websockets';
 
 @WebSocketGateway({ cors: { origin: 'http://localhost:5173' } })
-export class RoomGateway {
+export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private clients = new Map<string, Socket>();
 
     constructor(
