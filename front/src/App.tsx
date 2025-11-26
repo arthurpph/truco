@@ -1,9 +1,7 @@
-import Game from "./pages/Game/game";
+import Game from './pages/Game/game';
 
 const App = () => {
-  return (
-    <Game/>
-  );
-}
+    return <Game />;
+};
 
 export default App;

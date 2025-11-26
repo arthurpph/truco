@@ -1,18 +1,19 @@
-import { motion } from "framer-motion";
-import React, { ReactNode } from "react";
-
-
+import { motion } from 'framer-motion';
+import React, { ReactNode } from 'react';
 
 interface AnimatedPageProps {
     children: ReactNode;
     startDirection?: 'left' | 'right';
 }
 
-const AnimatedPage: React.FC<AnimatedPageProps> = ({ children, startDirection }) => {
+const AnimatedPage: React.FC<AnimatedPageProps> = ({
+    children,
+    startDirection,
+}) => {
     const animations = {
-        initial: { opacity: 0, x: startDirection === 'right' ? 500 : -500 }, 
+        initial: { opacity: 0, x: startDirection === 'right' ? 500 : -500 },
         animate: { opacity: 1, x: 0 },
-        exit: { opacity: 0, x: startDirection === 'right' ? 500 : -500 }, 
+        exit: { opacity: 0, x: startDirection === 'right' ? 500 : -500 },
     };
 
     return (
@@ -22,11 +23,11 @@ const AnimatedPage: React.FC<AnimatedPageProps> = ({ children, startDirection })
             animate="animate"
             exit="exit"
             transition={{ duration: 0.2 }}
-            className="h-full" 
+            className="h-full"
         >
             {children}
         </motion.div>
     );
-}
+};
 
 export default AnimatedPage;

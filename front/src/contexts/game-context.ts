@@ -1,6 +1,6 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext } from 'react';
 
-interface GameBackgroundContextType {
+type GameBackgroundContextType = {
     backgroundColor: string;
     setBackgroundColor: (color: string) => void;
     setDefaultBackgroundColor: () => void;
@@ -8,13 +8,17 @@ interface GameBackgroundContextType {
     setUsername: (username: string) => void;
 };
 
-export const GameBackgroundContext = createContext<GameBackgroundContextType | undefined>(undefined);
+export const GameBackgroundContext = createContext<
+    GameBackgroundContextType | undefined
+>(undefined);
 
 export const useGameBackgroundContext = () => {
     const context = useContext(GameBackgroundContext);
 
     if (!context) {
-        throw new Error("useGameBackgroundContext must be used within a GameBackgroundProvider");
+        throw new Error(
+            'useGameBackgroundContext must be used within a GameBackgroundProvider',
+        );
     }
 
     return context;
