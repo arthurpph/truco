@@ -3,29 +3,47 @@
 @tailwind utilities;
 
 #root {
-    height: 100%;
-    overflow: hidden;
+  height: 100%;
+  overflow: hidden;
 }
 
 .custom-scroll {
-    transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1);
+  transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1);
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: rgba(6, 78, 59, 0.3);
+  border-radius: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.5);
+  border-radius: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.7);
 }
 
 .fade-enter {
-    transform: translateX(-100%); 
-    opacity: 0;
+  transform: translateX(-100%);
+  opacity: 0;
 }
 .fade-enter-active {
-    transform: translateX(0);
-    opacity: 1;
-    transition: transform 500ms ease-in, opacity 500ms ease-in;
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform 500ms ease-in, opacity 500ms ease-in;
 }
 .fade-exit {
-    transform: translateX(0); 
-    opacity: 1;
+  transform: translateX(0);
+  opacity: 1;
 }
 .fade-exit-active {
-    transform: translateX(-100%); 
-    opacity: 0;
-    transition: transform 500ms ease-in, opacity 500ms ease-in;
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 500ms ease-in, opacity 500ms ease-in;
 }
