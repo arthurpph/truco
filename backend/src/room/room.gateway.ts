@@ -34,7 +34,9 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.clients.delete(client.id);
         const player = this.playerService.deleteBySocketId(client.id);
         if (!player) return;
-        this.roomService.removeDisconnectedPlayer(player);
+        const room = this.roomService.removePlayerFromAnyRoom(player);
+        if(!room) return;
+        this.emitToRoom(room, 'room:update', room.toDto());
     }
 
     @SubscribeMessage('room:getAll')
@@ -69,7 +71,10 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.playerService.getByName(playerName) ||
             this.playerService.create(playerName, client.id);
         if (!player) return null;
-        return this.roomService.addPlayer(roomId, player)?.toDto() || null;
+        const room = this.roomService.addPlayer(roomId, player);
+        if(!room) return null;
+        this.emitToRoom(room, 'room:update', room.toDto())
+        return room.toDto();
     }
 
     @SubscribeMessage('room:leave')
@@ -77,7 +82,10 @@ export class RoomGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const { roomId, playerName } = dto;
         const player = this.playerService.getByName(playerName);
         if (!player) return null;
-        return this.roomService.removePlayer(roomId, player)?.toDto() || null;
+        const room = this.roomService.removePlayer(roomId, player);
+        if(!room) return null; 
+        this.emitToRoom(room, 'room:update', room.toDto());
+        return room.toDto();
     }
 
     @SubscribeMessage('room:isready')

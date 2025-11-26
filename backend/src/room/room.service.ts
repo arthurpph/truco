@@ -28,12 +28,13 @@ export class RoomService {
         return room;
     }
 
-    removeDisconnectedPlayer(player: Player): void {
+    removePlayerFromAnyRoom(player: Player): Room | null {
         for (const room of this.rooms.values()) {
             if (this.removePlayerFromRoom(room, player)) {
-                return;
+                return room;
             }
         }
+        return null;
     }
 
     removePlayer(roomId: string, player: Player): Room | null {
