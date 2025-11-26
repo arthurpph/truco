@@ -60,32 +60,58 @@ const CreateRoom = () => {
           </AnimatedPage>
         ) : (
           <AnimatedPage startDirection="right">
-            <div className="flex flex-col h-full bg-white rounded-game-border-2 select-none">
-              <div className="relative flex items-center justify-center bg-blue h-[148px] rounded-t-game-border-2">
-                <ClickDiv
-                  onClick={() => setShowRoomsList(true)}
-                  defaultStyles="absolute top-0 left-0 cursor-pointer scale:100 active:scale-110"
-                >
-                  <LeftSign />
-                </ClickDiv>
-                <h1 className="font-open-sans-semibold font-bold text-white text-[35px] select-none">
-                  Criar Sala
-                </h1>
+            <div className="relative w-full h-full overflow-hidden">
+              <div className="absolute inset-0 opacity-5 text-white/20">
+                <div className="absolute top-12 left-16 text-8xl rotate-12">
+                  ♠
+                </div>
+                <div className="absolute top-24 right-24 text-7xl -rotate-12">
+                  ♦
+                </div>
+                <div className="absolute bottom-16 left-24 text-8xl -rotate-6">
+                  ♣
+                </div>
+                <div className="absolute bottom-24 right-16 text-7xl rotate-6">
+                  ♥
+                </div>
               </div>
-              <div className="flex flex-col items-center justify-center h-full gap-6">
-                <input
-                  type="text"
-                  className="font-pt-sans font-normal bg-white-3 text-[25px] text-gray-500 w-[350px] h-[50px] 
-                                    rounded-[10px] leading-[75px] pl-[10px] border-2 border-white 
-                                    transition-transform duration-150 ease-linear transform focus:scale-105 focus:outline-none
-                                "
-                  ref={roomNameRef}
-                />
-                <ClickButton
-                  name="Criar"
-                  defaultStyles="animate-btsHome cursor-pointer text-[30px] font-bold bg-yellow text-purple-2 w-[350px] h-[72px] rounded-[10px] tracking-[1px] select-none uppercase active:bg-yellow-2"
-                  onClick={createRoom}
-                />
+
+              <div className="relative flex flex-col h-full">
+                <div className="flex items-center px-8 py-6 mb-8">
+                  <ClickDiv
+                    onClick={() => setShowRoomsList(true)}
+                    defaultStyles="cursor-pointer hover:scale-110 transition-transform mr-4"
+                  >
+                    <LeftSign />
+                  </ClickDiv>
+                  <h1 className="text-5xl font-black text-amber-400 tracking-tight">
+                    CRIAR SALA
+                  </h1>
+                </div>
+
+                <div className="flex items-center justify-center flex-1">
+                  <div className="bg-emerald-900/40 backdrop-blur-sm p-8 rounded-2xl border border-emerald-700/50 w-full max-w-md">
+                    <div className="mb-6">
+                      <label className="block text-amber-100 text-sm mb-2 font-medium">
+                        Nome da sala
+                      </label>
+                      <input
+                        type="text"
+                        ref={roomNameRef}
+                        placeholder="Digite o nome da sala"
+                        className="w-full h-14 px-4 bg-emerald-950/60 text-white text-lg rounded-lg
+                          border-2 border-emerald-600/50 focus:border-amber-500 focus:outline-none 
+                          transition-colors placeholder:text-emerald-600"
+                      />
+                    </div>
+                    <ClickButton
+                      name="Criar"
+                      defaultStyles="w-full h-14 bg-amber-500 hover:bg-amber-400 text-emerald-950 
+                        font-bold text-lg rounded-lg transition-colors uppercase tracking-wide cursor-pointer"
+                      onClick={createRoom}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </AnimatedPage>

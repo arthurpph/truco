@@ -2,28 +2,28 @@ import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import RoomsList from "./Rooms/RoomsList/rooms-list";
 
-const ClickButton = ({ name, onClick, defaultStyles }: { name: string, onClick: () => void, defaultStyles: string }) => (
-  <button onClick={onClick} className={defaultStyles}>
-    {name}
-  </button>
-);
-
-const AnimatedPage = ({ children, startDirection }: { children: React.ReactNode, startDirection: string }) => {
+const AnimatedPage = ({
+  children,
+  startDirection,
+}: {
+  children: React.ReactNode;
+  startDirection: string;
+}) => {
   const variants = {
-    initial: { 
-      x: startDirection === "left" ? -100 : 100, 
-      opacity: 0 
-    },
-    animate: { 
-      x: 0, 
-      opacity: 1,
-      transition: { duration: 0.4 }
-    },
-    exit: { 
-      x: startDirection === "left" ? 100 : -100, 
+    initial: {
+      x: startDirection === "left" ? -100 : 100,
       opacity: 0,
-      transition: { duration: 0.3 }
-    }
+    },
+    animate: {
+      x: 0,
+      opacity: 1,
+      transition: { duration: 0.4 },
+    },
+    exit: {
+      x: startDirection === "left" ? 100 : -100,
+      opacity: 0,
+      transition: { duration: 0.3 },
+    },
   };
 
   return (
@@ -58,7 +58,7 @@ const Home = () => {
   };
 
   return (
-    <div className="relative w-full h-screen bg-gradient-to-b from-emerald-800 to-emerald-950 overflow-hidden">
+    <div className="relative w-full h-full overflow-hidden">
       <div className="absolute inset-0 opacity-5 text-white/20">
         <div className="absolute top-12 left-16 text-8xl rotate-12">♠</div>
         <div className="absolute top-24 right-24 text-7xl -rotate-12">♦</div>
@@ -89,10 +89,12 @@ const Home = () => {
                       type="text"
                       value={username}
                       onChange={handleInputChange}
-                      onKeyPress={(e) => e.key === 'Enter' && handlePlayClick()}
+                      onKeyPress={(e) => e.key === "Enter" && handlePlayClick()}
                       placeholder="Digite seu nome"
                       className={`w-full h-14 px-4 bg-emerald-950/60 text-white text-lg rounded-lg
-                        border-2 ${error ? 'border-red-500' : 'border-emerald-600/50'}
+                        border-2 ${
+                          error ? "border-red-500" : "border-emerald-600/50"
+                        }
                         focus:border-amber-500 focus:outline-none transition-colors
                         placeholder:text-emerald-600`}
                     />
