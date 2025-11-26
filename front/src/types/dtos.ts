@@ -3,25 +3,24 @@ export interface CreateRoomDTO {
   playerName: string;
 }
 
-export interface TeamDTO {
-  players: [RoomPlayerRequestDTO, RoomPlayerRequestDTO];
-}
+export type TeamDTO = [RoomPlayerRequestDTO, RoomPlayerRequestDTO];
 
 export interface RoomDTO {
   id: string;
   name: string;
   teams: [TeamDTO, TeamDTO];
+  playersReady: string[];
 }
 
 export interface RoomPlayerResponseDTO {
-  name: string;
+  roomId: string;
+  playerName: string;
 }
 
-export interface RoomPlayerRequestDTO {
+export type RoomPlayerRequestDTO = {
   id: string;
   name: string;
-  isReady: boolean;
-}
+};
 
 export interface JoinRoomDTO {
   roomId: string;

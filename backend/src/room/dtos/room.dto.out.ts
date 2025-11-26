@@ -7,4 +7,5 @@ export class RoomDtoOut {
         [PlayerDtoOut | null, PlayerDtoOut | null],
         [PlayerDtoOut | null, PlayerDtoOut | null],
     ];
+    playersReady: string[];
 }

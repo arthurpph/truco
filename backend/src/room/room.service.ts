@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Room } from './room.entity';
-import { Player } from 'src/player/player.entity';
+import { Room } from './entities/room.entity';
+import { Player } from 'src/player/entities/player.entity';
 
 @Injectable()
 export class RoomService {
@@ -28,13 +28,12 @@ export class RoomService {
         return room;
     }
 
-    removeDisconnectedPlayer(player: Player): Room | null {
+    removeDisconnectedPlayer(player: Player): void {
         for (const room of this.rooms.values()) {
             if (this.removePlayerFromRoom(room, player)) {
-                return room;
+                return;
             }
         }
-        return null;
     }
 
     removePlayer(roomId: string, player: Player): Room | null {
@@ -75,6 +74,7 @@ export class RoomService {
                 if (room.teams[i][j]?.id !== player.id) continue;
 
                 room.teams[i][j] = null;
+                room.playersReady.delete(player.id);
                 return true;
             }
         }

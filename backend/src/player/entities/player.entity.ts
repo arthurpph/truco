@@ -1,4 +1,4 @@
-import { PlayerDtoOut } from './dtos/player.dto.out';
+import { PlayerDtoOut } from '../dtos/player.dto.out';
 
 export class Player {
     id: string;

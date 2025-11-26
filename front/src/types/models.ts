@@ -1,7 +1,6 @@
 export interface Player {
   id: string;
   name: string;
-  isReady: boolean;
 }
 
 export type Team = [Player, Player];
@@ -10,6 +9,7 @@ export interface Room {
   id: string;
   name: string;
   teams: [Team, Team];
+  playersReady: string[];
 }
 
 export interface ShowRoomInfo {

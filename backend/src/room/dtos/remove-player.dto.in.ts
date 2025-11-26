@@ -1,4 +1,4 @@
-import { Player } from 'src/player/player.entity';
+import { Player } from 'src/player/entities/player.entity';
 
 export class RemovePlayerDto {
     roomId: string;

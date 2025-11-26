@@ -1,5 +1,5 @@
-import { Player } from 'src/player/player.entity';
-import { RoomDtoOut } from './dtos/room.dto.out';
+import { Player } from 'src/player/entities/player.entity';
+import { RoomDtoOut } from '../dtos/room.dto.out';
 
 export class Room {
     id: string;
@@ -32,6 +32,7 @@ export class Room {
                     team2[1] ? team2[1].toDto() : null,
                 ],
             ],
+            playersReady: Array.from(this.playersReady),
         };
     }
 }

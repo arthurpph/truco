@@ -7,7 +7,7 @@ import {
 import { Socket } from 'socket.io';
 import { RoomService } from './room.service';
 import { GetRoomDto } from './dtos/get-room.dto.in';
-import { Room } from './room.entity';
+import { Room } from './entities/room.entity';
 import { CreateRoomDto } from './dtos/create-room.dto.in';
 import { JoinRoomDto } from './dtos/join-room.dto.in';
 import { PlayerService } from 'src/player/player.service';
@@ -43,8 +43,7 @@ export class RoomGateway {
     @SubscribeMessage('room:get')
     getRoom(@MessageBody() dto: GetRoomDto): RoomDtoOut | null {
         const { roomId } = dto;
-        const room = this.roomService.getById(roomId);
-        return room;
+        return this.roomService.getById(roomId)?.toDto() || null;
     }
 
     @SubscribeMessage('room:create')
@@ -62,30 +61,41 @@ export class RoomGateway {
     joinRoom(
         @MessageBody() dto: JoinRoomDto,
         @ConnectedSocket() client: Socket,
-    ): RoomDtoOut | null | undefined {
+    ): RoomDtoOut | null {
         const { roomId, playerName } = dto;
         const player =
             this.playerService.getByName(playerName) ||
             this.playerService.create(playerName, client.id);
         if (!player) return null;
-        return this.roomService.addPlayer(roomId, player)?.toDto();
+        return this.roomService.addPlayer(roomId, player)?.toDto() || null;
     }
 
     @SubscribeMessage('room:leave')
-    leaveRoom(@MessageBody() dto: LeaveRoomDto): RoomDtoOut | null | undefined {
+    leaveRoom(@MessageBody() dto: LeaveRoomDto): RoomDtoOut | null {
         const { roomId, playerName } = dto;
         const player = this.playerService.getByName(playerName);
         if (!player) return null;
-        return this.roomService.removePlayer(roomId, player)?.toDto();
+        return this.roomService.removePlayer(roomId, player)?.toDto() || null;
     }
 
     @SubscribeMessage('room:isready')
-    toggleIsReady(
-        @MessageBody() dto: ToggleIsReadyDto,
-    ): RoomDtoOut | null | undefined {
+    toggleIsReady(@MessageBody() dto: ToggleIsReadyDto): void {
         const { roomId, playerName } = dto;
         const player = this.playerService.getByName(playerName);
-        if (player == null) return null;
-        return this.roomService.toggleIsReady(roomId, player.id)?.toDto();
+        if (!player) return;
+        const room = this.roomService.toggleIsReady(roomId, player.id);
+        if (!room) return;
+        this.emitToRoom(room, 'room:update', room.toDto());
+    }
+
+    private emitToRoom(room: Room, event: string, data: any) {
+        for (const team of room.teams) {
+            for (const player of team) {
+                if (!player) continue;
+                const client = this.clients.get(player.socketId);
+                if (!client) continue;
+                client.emit(event, data);
+            }
+        }
     }
 }

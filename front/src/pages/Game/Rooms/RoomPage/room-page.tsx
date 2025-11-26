@@ -46,7 +46,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
 
   const handleToggleIsReady = () => {
     socket.toggleIsReady({
-      name: username,
+      roomId: roomData!.id,
+      playerName: username,
     });
   };
 
@@ -68,7 +69,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
 
     const socketObject: Socket = socket.getSocketObject();
 
-    socketObject.on("roomDataUpdated", (roomData: RoomDTO) => {
+    socketObject.on("room:update", (roomData: RoomDTO) => {
       setRoomData(roomData as Room);
     });
 
@@ -77,7 +78,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
     });
 
     return () => {
-      socketObject.off("roomDataUpdated");
+      socketObject.off("room:update");
       setDefaultBackgroundColor();
     };
   }, []);
@@ -116,10 +117,12 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                 </div>
                 <TeamSection
                   team={roomData.teams[0]}
+                  playersReady={roomData.playersReady}
                   backgroundColor="bg-white-2"
                 />
                 <TeamSection
                   team={roomData.teams[1]}
+                  playersReady={roomData.playersReady}
                   backgroundColor="bg-white"
                 />
                 <div className="flex flex-col items-center justify-center bg-white-2 w-full h-[34%]">
