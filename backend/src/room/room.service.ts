@@ -21,6 +21,10 @@ export class RoomService {
         return newRoom;
     }
 
+    delete(roomId: string): void {
+        this.rooms.delete(roomId);
+    }
+
     addPlayer(roomId: string, player: Player): Room | null {
         const room = this.rooms.get(roomId);
         if (!room) return null;

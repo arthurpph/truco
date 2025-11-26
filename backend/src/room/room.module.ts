@@ -1,10 +1,17 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { RoomGateway } from './room.gateway';
 import { RoomService } from './room.service';
 import { PlayerModule } from 'src/player/player.module';
+import { GameModule } from 'src/game/game.module';
+import { AppModule } from 'src/app.module';
 
 @Module({
     providers: [RoomGateway, RoomService],
-    imports: [PlayerModule],
+    exports: [RoomService],
+    imports: [
+        forwardRef(() => AppModule),
+        forwardRef(() => GameModule),
+        PlayerModule,
+    ],
 })
 export class RoomModule {}
