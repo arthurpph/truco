@@ -80,7 +80,7 @@ export class RoomGateway {
         const { roomId, playerName } = dto;
         const player = this.playerService.getByName(playerName);
         if (!player) return;
-        const room = this.roomService.toggleIsReady(roomId, player.id);
+        const room = this.roomService.toggleIsReady(roomId, player);
         if (!room) return;
         if (this.checkIfAllPlayersReady(room)) {
             this.startGame(room);

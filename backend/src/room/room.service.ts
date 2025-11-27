@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Room } from './entities/room.entity';
 import { Player } from 'src/player/entities/player.entity';
+import { AppGateway } from 'src/app.gateway';
+
+type EventOut = 'room:deleted';
 
 @Injectable()
 export class RoomService {
     private rooms = new Map<string, Room>(); // id -> room object
+
+    constructor(private readonly appGateway: AppGateway) {}
 
     getAll(): Room[] {
         return Array.from(this.rooms.values());
@@ -16,25 +21,29 @@ export class RoomService {
 
     create(name: string, player: Player): Room {
         const newRoom = new Room(name);
-        newRoom.teams[0][0] = player;
+        newRoom.addPlayer(player);
         this.rooms.set(newRoom.id, newRoom);
         return newRoom;
     }
 
     delete(roomId: string): void {
+        const room = this.rooms.get(roomId);
+        if (!room) return;
+        room.delete();
         this.rooms.delete(roomId);
     }
 
     addPlayer(roomId: string, player: Player): Room | null {
         const room = this.rooms.get(roomId);
         if (!room) return null;
-        if (!this.addPlayerToRoom(room, player)) return null;
+        if (!room.addPlayer(player)) return null;
         return room;
     }
 
     removePlayerFromAnyRoom(player: Player): Room | null {
         for (const room of this.rooms.values()) {
-            if (this.removePlayerFromRoom(room, player)) {
+            if (room.containsPlayer(player)) {
+                room.removePlayer(player);
                 return room;
             }
         }
@@ -44,20 +53,15 @@ export class RoomService {
     removePlayer(roomId: string, player: Player): Room | null {
         const room = this.rooms.get(roomId);
         if (!room) return null;
-        if (!this.removePlayerFromRoom(room, player)) return null;
+        if (!room.containsPlayer(player)) return null;
+        room.removePlayer(player);
         return room;
     }
 
-    toggleIsReady(roomId: string, playerId: string): Room | null {
+    toggleIsReady(roomId: string, player: Player): Room | null {
         const room = this.rooms.get(roomId);
         if (!room) return null;
-
-        if (room.playersReady.has(playerId)) {
-            room.playersReady.delete(playerId);
-        } else {
-            room.playersReady.add(playerId);
-        }
-
+        if (!room.toggleIsReady(player)) return null;
         return room;
     }
 
@@ -73,16 +77,11 @@ export class RoomService {
         return false;
     }
 
-    private removePlayerFromRoom(room: Room, player: Player): boolean {
-        for (let i = 0; i < room.teams.length; i++) {
-            for (let j = 0; j < room.teams[i].length; j++) {
-                if (room.teams[i][j]?.id !== player.id) continue;
-
-                room.teams[i][j] = null;
-                room.playersReady.delete(player.id);
-                return true;
-            }
+    private broadcastStateUpdate(room: Room, event: EventOut, data: any) {
+        for (const player of room.players) {
+            const socket = this.appGateway.get(player.id);
+            if (!socket) continue;
+            socket.emit(event, data);
         }
-        return false;
     }
 }
