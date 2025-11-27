@@ -7,7 +7,6 @@ import {
 import { Server } from 'socket.io';
 import { PlayCardDto } from './dtos/play-card.dto.in';
 import { GameService } from './game.service';
-import { Game } from './entities/game.entity';
 import { TrucoAskDto } from './dtos/truco-ask.dto.in';
 
 @WebSocketGateway({ cors: { origin: 'http://localhost:5173' } })
@@ -24,8 +23,14 @@ export class GameGateway {
     }
 
     @SubscribeMessage('game:truco:ask')
-    truco(@MessageBody() dto: TrucoAskDto): void {
+    askTruco(@MessageBody() dto: TrucoAskDto): void {
         const { gameId, playerId } = dto;
-        const game = this.gameService.askTruco(gameId, playerId);
+        this.gameService.askTruco(gameId, playerId);
+    }
+
+    @SubscribeMessage('game:state:accept')
+    acceptTruco(@MessageBody() dto: TrucoAskDto): void {
+        const { gameId, playerId } = dto;
+        this.gameService.acceptTruco(gameId, playerId);
     }
 }

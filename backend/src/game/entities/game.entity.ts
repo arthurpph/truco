@@ -1,24 +1,31 @@
 import { Team } from 'src/shared/entities/team.entity';
 import { PlayerGame } from './player-game.entity';
 import { Card, DECK } from './card.entity';
+import { RoundValues, TrucoPoints, TrucoStatus } from '../types/game.type';
 
 export class Game {
     id: string;
     players: PlayerGame[];
     teams: Team<PlayerGame>;
     roundNumber: number;
+    currentPlayerIndexRound: number;
+    currentPlayerIndex: number;
     currentPlayer: string;
-    cardsPlayedOnRound: null;
-    points: number;
+    cardsPlayedOnRound: Card[];
+    currentRoundValue: RoundValues;
+    trucoStatus: TrucoStatus = { onGoing: false };
     startedAt: Date;
 
     constructor(id: string, teams: Team<PlayerGame>) {
         this.id = id;
         this.teams = teams;
         this.roundNumber = 1;
+        this.currentPlayerIndexRound = 0;
+        this.currentPlayerIndex = 0;
         this.currentPlayer = teams[0][0].id;
-        this.cardsPlayedOnRound = null;
-        this.points = 1;
+        this.cardsPlayedOnRound = [];
+        this.currentRoundValue = 1;
+        this.trucoStatus = { onGoing: false };
         this.startedAt = new Date();
         this.players = [];
         for (let i = 0; i < teams.length; i++) {
@@ -56,17 +63,67 @@ export class Game {
     }
 
     getNextPlayerToPlay(): PlayerGame {
-        const currentPlayerIndex = this.getCurrentPlayerIndex();
-        return this.players[(currentPlayerIndex + 1) % this.players.length];
+        return this.players[
+            (this.currentPlayerIndex + 1) % this.players.length
+        ];
+    }
+
+    getNextTrucoPoints(): -1 | TrucoPoints {
+        const trucoPointsSequence = [1, 3, 6, 9, 12];
+        const currentIndex = trucoPointsSequence.indexOf(
+            this.currentRoundValue,
+        );
+        if (
+            currentIndex === -1 ||
+            currentIndex === trucoPointsSequence.length - 1
+        ) {
+            return -1;
+        }
+        return trucoPointsSequence[currentIndex + 1] as 3 | 6 | 9 | 12;
+    }
+
+    trucoAsk(playerId: string): TrucoStatus | null {
+        const nextTrucoPoints = this.getNextTrucoPoints();
+        if (this.currentPlayer !== playerId) return null;
+        if (nextTrucoPoints === -1) return null;
+        this.trucoStatus = {
+            onGoing: true,
+            playerFrom: playerId,
+            playerTo: this.getNextPlayerToPlay().id,
+            pointsInCaseOfAccept: nextTrucoPoints,
+        };
+        return this.trucoStatus;
+    }
+
+    trucoAccept(): TrucoStatus | null {
+        const nextTrucoPoints = this.getNextTrucoPoints();
+        if (nextTrucoPoints === -1) return null;
+        this.currentRoundValue = nextTrucoPoints;
+        this.trucoStatus = { onGoing: false };
+        return this.trucoStatus;
+    }
+
+    trucoReject(): TrucoStatus | null {
+        if (!this.trucoStatus.onGoing) return null;
+        this.trucoStatus = { onGoing: false };
+        this.nextRound();
+        return this.trucoStatus;
+    }
+
+    private nextRound(): void {
+        this.roundNumber += 1;
+        this.cardsPlayedOnRound = [];
+        this.currentPlayerIndexRound =
+            (this.currentPlayerIndexRound + 1) % this.players.length;
+        this.currentPlayerIndex = this.currentPlayerIndexRound;
+        this.trucoStatus = { onGoing: false };
+        this.currentRoundValue = 1;
     }
 
     private advanceCurrentPlayer(): void {
-        const currentPlayerIndex = this.getCurrentPlayerIndex();
-        this.currentPlayer =
-            this.players[(currentPlayerIndex + 1) % this.players.length].id;
-    }
-
-    private getCurrentPlayerIndex(): number {
-        return this.players.findIndex((p) => p.id === this.currentPlayer);
+        const nextPlayerIndex =
+            (this.currentPlayerIndex + 1) % this.players.length;
+        this.currentPlayer = this.players[nextPlayerIndex].id;
+        this.currentPlayerIndex = nextPlayerIndex;
     }
 }

@@ -6,8 +6,14 @@ import { RoomService } from 'src/room/room.service';
 import { Team } from 'src/shared/entities/team.entity';
 import { Card } from './entities/card.entity';
 import { AppGateway } from 'src/app.gateway';
+import { TrucoAskedDtoOut } from './dtos/truco-asked.dto.out';
+import { CardPlayedDtoOut } from './dtos/card-played.dto.out';
 
-type EventOut = 'game:cardplayed' | 'game:truco:asked';
+type EventOut =
+    | 'game:cardplayed'
+    | 'game:truco:asked'
+    | 'game:truco:accepted'
+    | 'game:truco:rejected';
 
 @Injectable()
 export class GameService {
@@ -47,22 +53,45 @@ export class GameService {
         const game = this.games.get(gameId);
         if (!game) return;
         game.playCard(playerId, card);
-        this.broadcastStateUpdate(game, 'game:cardplayed', {
-            ...(isDark ? { isDark } : { card }), // only send the card if not dark, otherwise it could easily be cheated by the client
+        const dto: CardPlayedDtoOut = {
+            isDark,
+            ...(!isDark && { card }),
             playerId,
-            currentPlayer: game?.currentPlayer,
-        });
+            currentPlayer: game.currentPlayer,
+        } as CardPlayedDtoOut;
+        this.broadcastStateUpdate(game, 'game:cardplayed', dto);
     }
 
     askTruco(gameId: string, playerId: string): void {
         const game = this.games.get(gameId);
         if (!game) return;
         if (game.currentPlayer !== playerId) return;
-        const whoShouldAnswerPlayer = game.getNextPlayerToPlay();
-        this.broadcastStateUpdate(game, 'game:truco:asked', {
-            from: playerId,
-            to: whoShouldAnswerPlayer.id,
-        });
+        const trucoStatus = game.trucoAsk(playerId);
+        if (!trucoStatus || !trucoStatus.onGoing) return;
+        const dto: TrucoAskedDtoOut = {
+            playerFrom: trucoStatus.playerFrom,
+            playerTo: trucoStatus.playerTo,
+            pointsInCaseOfAccept: trucoStatus.pointsInCaseOfAccept,
+        };
+        this.broadcastStateUpdate(game, 'game:truco:asked', dto);
+    }
+
+    acceptTruco(gameId: string, playerId: string): void {
+        const game = this.games.get(gameId);
+        if (!game) return;
+        if (game.getNextPlayerToPlay().id !== playerId) return;
+        const trucoStatus = game.trucoAccept();
+        if (!trucoStatus || trucoStatus.onGoing) return;
+        this.broadcastStateUpdate(game, 'game:truco:accepted', null);
+    }
+
+    rejectTruco(gameId: string, playerId: string): void {
+        const game = this.games.get(gameId);
+        if (!game) return;
+        if (game.getNextPlayerToPlay().id !== playerId) return;
+        const trucoStatus = game.trucoReject();
+        if (!trucoStatus || trucoStatus.onGoing) return;
+        this.broadcastStateUpdate(game, 'game:truco:rejected', null);
     }
 
     private broadcastStateUpdate(game: Game, event: EventOut, data: any) {
