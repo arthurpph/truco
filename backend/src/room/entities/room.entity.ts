@@ -1,12 +1,12 @@
 import { Player } from 'src/player/entities/player.entity';
 import { RoomDtoOut } from '../dtos/room.dto.out';
-import { Team } from 'src/shared/entities/team.entity';
+import { Teams } from 'src/shared/entities/team.entity';
 
 export class Room {
     id: string;
     name: string;
     players: Set<Player>;
-    teams: Team<Player | null>;
+    teams: Teams<Player | null>;
     playersReady: Set<string> = new Set();
 
     constructor(name: string) {

@@ -1,28 +1,37 @@
-import { Team } from 'src/shared/entities/team.entity';
+import { Team, Teams } from 'src/shared/entities/team.entity';
 import { PlayerGame } from './player-game.entity';
 import { Card, DECK } from './card.entity';
-import { RoundValues, TrucoPoints, TrucoStatus } from '../types/game.type';
+import {
+    Round,
+    RoundValues,
+    TrucoPoints,
+    TrucoStatus,
+} from '../types/game.type';
 
 export class Game {
     id: string;
     players: PlayerGame[];
-    teams: Team<PlayerGame>;
+    teams: Teams<PlayerGame>;
     roundNumber: number;
+    roundHistory: Round<PlayerGame>[];
     currentPlayerIndexRound: number;
     currentPlayerIndex: number;
     currentPlayer: string;
+    currentRoundCounter: number;
     cardsPlayedOnRound: Card[];
     currentRoundValue: RoundValues;
     trucoStatus: TrucoStatus = { onGoing: false };
     startedAt: Date;
 
-    constructor(id: string, teams: Team<PlayerGame>) {
+    constructor(id: string, teams: Teams<PlayerGame>) {
         this.id = id;
         this.teams = teams;
         this.roundNumber = 1;
+        this.roundHistory = [];
         this.currentPlayerIndexRound = 0;
         this.currentPlayerIndex = 0;
         this.currentPlayer = teams[0][0].id;
+        this.currentRoundCounter = 0;
         this.cardsPlayedOnRound = [];
         this.currentRoundValue = 1;
         this.trucoStatus = { onGoing: false };
@@ -35,16 +44,23 @@ export class Game {
         }
     }
 
-    playCard(playerId: string, card: Card): Game | null {
+    playCard(
+        playerId: string,
+        card: Card,
+    ):
+        | { roundEnded: false }
+        | ({ roundEnded: true } & Round<PlayerGame>)
+        | null {
         const player = this.players.find((p) => p.id === playerId);
         if (!player) return null;
-        const cardIndex = player.hand.findIndex(
-            (c) => c.suit === card.suit && c.value === card.value,
-        );
-        if (cardIndex === -1) return null;
-        player.hand.splice(cardIndex, 1);
+        const updatedHand = player.playCard(card);
+        if (!updatedHand) return null;
         this.advanceCurrentPlayer();
-        return this;
+        if (this.checkIfRoundEnded()) {
+            const roundHistoryData = this.nextRound();
+            return { roundEnded: true, ...roundHistoryData };
+        }
+        return { roundEnded: false };
     }
 
     shuffleAndGiveCards(): void {
@@ -110,7 +126,15 @@ export class Game {
         return this.trucoStatus;
     }
 
-    private nextRound(): void {
+    private nextRound(): Round<PlayerGame> {
+        const teamWinner = this.checkRoundWinner();
+        const roundHistoryData: Round<PlayerGame> = {
+            draw: teamWinner === undefined,
+            roundNumber: this.roundNumber,
+            cardsPlayed: this.cardsPlayedOnRound,
+            ...(teamWinner ? { teamWinner } : {}),
+        } as Round<PlayerGame>;
+        this.roundHistory.push(roundHistoryData);
         this.roundNumber += 1;
         this.cardsPlayedOnRound = [];
         this.currentPlayerIndexRound =
@@ -118,6 +142,7 @@ export class Game {
         this.currentPlayerIndex = this.currentPlayerIndexRound;
         this.trucoStatus = { onGoing: false };
         this.currentRoundValue = 1;
+        return roundHistoryData;
     }
 
     private advanceCurrentPlayer(): void {
@@ -125,5 +150,16 @@ export class Game {
             (this.currentPlayerIndex + 1) % this.players.length;
         this.currentPlayer = this.players[nextPlayerIndex].id;
         this.currentPlayerIndex = nextPlayerIndex;
+        this.currentRoundCounter += 1;
+    }
+
+    private checkIfRoundEnded(): boolean {
+        return this.currentRoundCounter >= this.players.length;
+    }
+
+    // it returns null if there was invalid data or undefined means there was a draw
+    private checkRoundWinner(): Team<PlayerGame> | null | undefined {
+        // TODO
+        return undefined;
     }
 }

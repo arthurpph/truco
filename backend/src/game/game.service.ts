@@ -3,17 +3,20 @@ import { Game } from './entities/game.entity';
 import { Room } from 'src/room/entities/room.entity';
 import { PlayerGame } from './entities/player-game.entity';
 import { RoomService } from 'src/room/room.service';
-import { Team } from 'src/shared/entities/team.entity';
+import { Teams } from 'src/shared/entities/team.entity';
 import { Card } from './entities/card.entity';
 import { AppGateway } from 'src/app.gateway';
 import { TrucoAskedDtoOut } from './dtos/truco-asked.dto.out';
 import { CardPlayedDtoOut } from './dtos/card-played.dto.out';
+import { RoundEndedDtoOut } from './dtos/round-ended.dto.out';
 
 type EventOut =
     | 'game:cardplayed'
     | 'game:truco:asked'
     | 'game:truco:accepted'
-    | 'game:truco:rejected';
+    | 'game:truco:rejected'
+    | 'game:roundended'
+    | 'game:roundstarted';
 
 @Injectable()
 export class GameService {
@@ -25,16 +28,16 @@ export class GameService {
     ) {}
 
     create(room: Room): Game | null {
-        const teams: Team<PlayerGame> = new Array(2) as Team<PlayerGame>;
+        const teams: Teams<PlayerGame> = [
+            [undefined!, undefined!],
+            [undefined!, undefined!],
+        ];
 
         for (let i = 0; i < room.teams.length; i++) {
             for (let j = 0; j < room.teams[i].length; j++) {
                 const player = room.teams[i][j];
-                if (!player) {
-                    return null;
-                }
-                const playerGame = new PlayerGame(player.id, player.name);
-                teams[i][j] = playerGame;
+                if (!player) return null;
+                teams[i][j] = new PlayerGame(player.id, player.name);
             }
         }
         const game = new Game(room.id, teams);
@@ -52,14 +55,30 @@ export class GameService {
     ): void {
         const game = this.games.get(gameId);
         if (!game) return;
-        game.playCard(playerId, card);
-        const dto: CardPlayedDtoOut = {
+        const playCardResult = game.playCard(playerId, card);
+        if (!playCardResult) return;
+        const { roundEnded } = playCardResult;
+        const cardPlayedDtoOut: CardPlayedDtoOut = {
             isDark,
             ...(!isDark && { card }),
             playerId,
             currentPlayer: game.currentPlayer,
         } as CardPlayedDtoOut;
-        this.broadcastStateUpdate(game, 'game:cardplayed', dto);
+        this.broadcastStateUpdate(game, 'game:cardplayed', cardPlayedDtoOut);
+        if (!roundEnded) return;
+        const { draw, cardsPlayed } = playCardResult;
+        let roundEndedDtoOut: RoundEndedDtoOut;
+        if (draw) {
+            roundEndedDtoOut = { draw, cardsPlayed };
+        } else {
+            const { teamWinner } = playCardResult;
+            roundEndedDtoOut = {
+                draw,
+                cardsPlayed,
+                teamWinner,
+            };
+        }
+        this.broadcastStateUpdate(game, 'game:roundended', roundEndedDtoOut);
     }
 
     askTruco(gameId: string, playerId: string): void {
