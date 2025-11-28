@@ -16,14 +16,15 @@ export type TrucoStatus =
           pointsInCaseOfAccept: TrucoPoints;
       };
 
-type RoundBase = {
+export type RoundStatus = {
+    onGoing: boolean;
     roundNumber: number;
     cardsPlayed: Card[];
 };
 
-export type Round<T> =
+export type RoundHistory<T> =
     | ({
           draw: false;
           teamWinner: Team<T>;
-      } & RoundBase)
-    | ({ draw: true } & RoundBase);
+      } & Omit<RoundStatus, 'onGoing'>)
+    | ({ draw: true } & Omit<RoundStatus, 'onGoing'>);

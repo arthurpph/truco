@@ -3,12 +3,14 @@ import { Game } from './entities/game.entity';
 import { Room } from 'src/room/entities/room.entity';
 import { PlayerGame } from './entities/player-game.entity';
 import { RoomService } from 'src/room/room.service';
-import { Teams } from 'src/shared/entities/team.entity';
+import { Team, Teams } from 'src/shared/entities/team.entity';
 import { Card } from './entities/card.entity';
 import { AppGateway } from 'src/app.gateway';
 import { TrucoAskedDtoOut } from './dtos/truco-asked.dto.out';
 import { CardPlayedDtoOut } from './dtos/card-played.dto.out';
 import { RoundEndedDtoOut } from './dtos/round-ended.dto.out';
+import { RoundStartedDtoOut } from './dtos/round-started.dto.out';
+import { RoundHistory } from './types/game.type';
 
 type EventOut =
     | 'game:cardplayed'
@@ -62,29 +64,17 @@ export class GameService {
             isDark,
             ...(!isDark && { card }),
             playerId,
-            currentPlayer: game.currentPlayer,
+            currentPlayer: game.getCurrentPlayer(),
         } as CardPlayedDtoOut;
         this.broadcastStateUpdate(game, 'game:cardplayed', cardPlayedDtoOut);
         if (!roundEnded) return;
-        const { draw, cardsPlayed } = playCardResult;
-        let roundEndedDtoOut: RoundEndedDtoOut;
-        if (draw) {
-            roundEndedDtoOut = { draw, cardsPlayed };
-        } else {
-            const { teamWinner } = playCardResult;
-            roundEndedDtoOut = {
-                draw,
-                cardsPlayed,
-                teamWinner,
-            };
-        }
-        this.broadcastStateUpdate(game, 'game:roundended', roundEndedDtoOut);
+        this.handleRoundEnded(game, playCardResult);
     }
 
     askTruco(gameId: string, playerId: string): void {
         const game = this.games.get(gameId);
         if (!game) return;
-        if (game.currentPlayer !== playerId) return;
+        if (game.getCurrentPlayer().id !== playerId) return;
         const trucoStatus = game.trucoAsk(playerId);
         if (!trucoStatus || !trucoStatus.onGoing) return;
         const dto: TrucoAskedDtoOut = {
@@ -119,5 +109,37 @@ export class GameService {
             if (!socket) continue;
             socket.emit(event, data);
         }
+    }
+
+    private handleRoundEnded(
+        game: Game,
+        playCardResult: RoundHistory<PlayerGame>,
+    ) {
+        const { draw, cardsPlayed } = playCardResult;
+
+        let roundEndedDtoOut: RoundEndedDtoOut;
+        if (draw) {
+            roundEndedDtoOut = { draw, cardsPlayed };
+        } else {
+            const { teamWinner } = playCardResult;
+            roundEndedDtoOut = {
+                draw,
+                cardsPlayed,
+                teamWinner,
+            };
+        }
+        const roundStartedDtoOut: RoundStartedDtoOut = {
+            currentPlayer: game.getCurrentPlayer().toDto(),
+        };
+
+        this.broadcastStateUpdate(game, 'game:roundended', roundEndedDtoOut);
+        setTimeout(() => {
+            game.startNewRound();
+            this.broadcastStateUpdate(
+                game,
+                'game:roundstarted',
+                roundStartedDtoOut,
+            );
+        }, 5000);
     }
 }

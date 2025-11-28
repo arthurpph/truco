@@ -2,7 +2,8 @@ import { Team, Teams } from 'src/shared/entities/team.entity';
 import { PlayerGame } from './player-game.entity';
 import { Card, DECK } from './card.entity';
 import {
-    Round,
+    RoundHistory,
+    RoundStatus,
     RoundValues,
     TrucoPoints,
     TrucoStatus,
@@ -11,34 +12,32 @@ import {
 export class Game {
     id: string;
     players: PlayerGame[];
-    teams: Teams<PlayerGame>;
-    roundNumber: number;
-    roundHistory: Round<PlayerGame>[];
-    currentPlayerIndexRound: number;
-    currentPlayerIndex: number;
-    currentPlayer: string;
-    currentRoundCounter: number;
-    cardsPlayedOnRound: Card[];
-    currentRoundValue: RoundValues;
-    trucoStatus: TrucoStatus = { onGoing: false };
     startedAt: Date;
+
+    private teams: Teams<PlayerGame>;
+    private roundStatus: RoundStatus;
+    private roundHistory: RoundHistory<PlayerGame>[];
+    private currentPlayerIndexRound: number;
+    private currentPlayerIndex: number;
+    private currentRoundCounter: number;
+    private currentRoundValue: RoundValues;
+    private trucoStatus: TrucoStatus = { onGoing: false };
 
     constructor(id: string, teams: Teams<PlayerGame>) {
         this.id = id;
         this.teams = teams;
-        this.roundNumber = 1;
+        this.roundStatus = { onGoing: true, roundNumber: 1, cardsPlayed: [] };
         this.roundHistory = [];
         this.currentPlayerIndexRound = 0;
         this.currentPlayerIndex = 0;
-        this.currentPlayer = teams[0][0].id;
         this.currentRoundCounter = 0;
-        this.cardsPlayedOnRound = [];
         this.currentRoundValue = 1;
         this.trucoStatus = { onGoing: false };
         this.startedAt = new Date();
         this.players = [];
-        for (let i = 0; i < teams.length; i++) {
-            for (let j = 0; j < teams[i].length; j++) {
+        const teamSize = teams[0].length;
+        for (let j = 0; j < teamSize; j++) {
+            for (let i = 0; i < teams.length; i++) {
                 this.players.push(teams[i][j]);
             }
         }
@@ -49,32 +48,37 @@ export class Game {
         card: Card,
     ):
         | { roundEnded: false }
-        | ({ roundEnded: true } & Round<PlayerGame>)
+        | ({ roundEnded: true } & RoundHistory<PlayerGame>)
         | null {
+        if (this.getCurrentPlayer().id !== playerId) return null;
         const player = this.players.find((p) => p.id === playerId);
         if (!player) return null;
         const updatedHand = player.playCard(card);
         if (!updatedHand) return null;
+        this.roundStatus.cardsPlayed.push(card);
         this.advanceCurrentPlayer();
         if (this.checkIfRoundEnded()) {
-            const roundHistoryData = this.nextRound();
+            const roundHistoryData = this.roundEnded();
             return { roundEnded: true, ...roundHistoryData };
         }
         return { roundEnded: false };
     }
 
+    // based on Fisher–Yates algorithm
     shuffleAndGiveCards(): void {
-        const used = new Set<Card>();
-        for (let i = 0; i < 4 * 3; i++) {
-            let card = DECK[Math.floor(Math.random() * DECK.length)];
-            while (used.has(card)) {
-                card = DECK[Math.floor(Math.random() * DECK.length)];
-            }
-            used.add(card);
-            const playerIndex = i % 4;
-            const teamIndex = playerIndex % 2;
-            const playerOnTeamIndex = Math.floor(playerIndex / 2);
-            this.teams[teamIndex][playerOnTeamIndex].hand.push(card);
+        this.players.forEach((p) => p.clearHand());
+        const deckCopy = [...DECK];
+        for (let i = deckCopy.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [deckCopy[i], deckCopy[j]] = [deckCopy[j], deckCopy[i]];
+        }
+
+        const cardsPerPlayer = 3;
+        for (let i = 0; i < this.players.length; i++) {
+            this.players[i].hand = deckCopy.slice(
+                i * cardsPerPlayer,
+                (i + 1) * cardsPerPlayer,
+            );
         }
     }
 
@@ -100,7 +104,7 @@ export class Game {
 
     trucoAsk(playerId: string): TrucoStatus | null {
         const nextTrucoPoints = this.getNextTrucoPoints();
-        if (this.currentPlayer !== playerId) return null;
+        if (this.getCurrentPlayer().id !== playerId) return null;
         if (nextTrucoPoints === -1) return null;
         this.trucoStatus = {
             onGoing: true,
@@ -122,39 +126,54 @@ export class Game {
     trucoReject(): TrucoStatus | null {
         if (!this.trucoStatus.onGoing) return null;
         this.trucoStatus = { onGoing: false };
-        this.nextRound();
+        this.roundEnded();
         return this.trucoStatus;
     }
 
-    private nextRound(): Round<PlayerGame> {
+    getCurrentPlayer(): PlayerGame {
+        return this.players[this.currentPlayerIndex];
+    }
+
+    startNewRound(): void {
+        this.roundStatus.onGoing = true;
+        this.roundStatus.cardsPlayed = [];
+        this.currentRoundCounter = 0;
+    }
+
+    private roundEnded(): RoundHistory<PlayerGame> {
         const teamWinner = this.checkRoundWinner();
-        const roundHistoryData: Round<PlayerGame> = {
+        const roundHistoryData: RoundHistory<PlayerGame> = {
             draw: teamWinner === undefined,
-            roundNumber: this.roundNumber,
-            cardsPlayed: this.cardsPlayedOnRound,
+            roundNumber: this.roundStatus.roundNumber,
+            cardsPlayed: this.roundStatus.cardsPlayed,
             ...(teamWinner ? { teamWinner } : {}),
-        } as Round<PlayerGame>;
+        } as RoundHistory<PlayerGame>;
         this.roundHistory.push(roundHistoryData);
-        this.roundNumber += 1;
-        this.cardsPlayedOnRound = [];
+        this.resetRoundStatus();
         this.currentPlayerIndexRound =
             (this.currentPlayerIndexRound + 1) % this.players.length;
         this.currentPlayerIndex = this.currentPlayerIndexRound;
         this.trucoStatus = { onGoing: false };
         this.currentRoundValue = 1;
+        this.currentRoundCounter = 0;
         return roundHistoryData;
     }
 
     private advanceCurrentPlayer(): void {
         const nextPlayerIndex =
             (this.currentPlayerIndex + 1) % this.players.length;
-        this.currentPlayer = this.players[nextPlayerIndex].id;
         this.currentPlayerIndex = nextPlayerIndex;
         this.currentRoundCounter += 1;
     }
 
     private checkIfRoundEnded(): boolean {
         return this.currentRoundCounter >= this.players.length;
+    }
+
+    private resetRoundStatus(): void {
+        this.roundStatus.onGoing = false;
+        this.roundStatus.roundNumber += 1;
+        this.roundStatus.cardsPlayed = [];
     }
 
     // it returns null if there was invalid data or undefined means there was a draw

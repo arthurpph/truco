@@ -12,4 +12,8 @@ export class PlayerGame extends Player {
         this.hand.splice(cardIndex, 1);
         return this.hand;
     }
+
+    clearHand(): void {
+        this.hand = [];
+    }
 }
