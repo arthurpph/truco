@@ -30,16 +30,13 @@ export class GameService {
     ) {}
 
     create(room: Room): Game | null {
-        const teams: Teams<PlayerGame> = [
-            [undefined!, undefined!],
-            [undefined!, undefined!],
-        ];
+        const teams: Teams<PlayerGame> = [new Team(), new Team()];
 
         for (let i = 0; i < room.teams.length; i++) {
-            for (let j = 0; j < room.teams[i].length; j++) {
-                const player = room.teams[i][j];
+            const players = room.teams[i].players;
+            for (const player of players) {
                 if (!player) return null;
-                teams[i][j] = new PlayerGame(player.id, player.name);
+                teams[i].addPlayer(new PlayerGame(player.id, player.name));
             }
         }
         const game = new Game(room.id, teams);

@@ -35,7 +35,7 @@ export class Game {
         this.trucoStatus = { onGoing: false };
         this.startedAt = new Date();
         this.players = [];
-        const teamSize = teams[0].length;
+        const teamSize = teams[0].players.length;
         for (let j = 0; j < teamSize; j++) {
             for (let i = 0; i < teams.length; i++) {
                 this.players.push(teams[i][j]);
@@ -55,7 +55,13 @@ export class Game {
         if (!player) return null;
         const updatedHand = player.playCard(card);
         if (!updatedHand) return null;
-        this.roundStatus.cardsPlayed.push(card);
+        const teamOfPlayer = this.getTeamOfPlayer(player);
+        if (!teamOfPlayer) return null;
+        const roundStatusCardPlayed = {
+            card: card,
+            team: teamOfPlayer,
+        };
+        this.roundStatus.cardsPlayed.push(roundStatusCardPlayed);
         this.advanceCurrentPlayer();
         if (this.checkIfRoundEnded()) {
             const roundHistoryData = this.roundEnded();
@@ -64,7 +70,7 @@ export class Game {
         return { roundEnded: false };
     }
 
-    // based on Fisher–Yates algorithm
+    // Fisher–Yates algorithm
     shuffleAndGiveCards(): void {
         this.players.forEach((p) => p.clearHand());
         const deckCopy = [...DECK];
@@ -178,7 +184,47 @@ export class Game {
 
     // it returns null if there was invalid data or undefined means there was a draw
     private checkRoundWinner(): Team<PlayerGame> | null | undefined {
-        // TODO
-        return undefined;
+        const played = this.roundStatus.cardsPlayed;
+
+        if (!played.length) return null;
+
+        const best: Record<string, Card> = {};
+        for (const { card, team } of played) {
+            const teamId = team.id;
+            const current = best[teamId];
+            const playedCardValue = card.value;
+            if (!current || playedCardValue > current.value) {
+                best[teamId] = card;
+            }
+        }
+
+        let winnerTeamId: string | null = null;
+        let highestValue = -Infinity;
+        let draw = false;
+
+        for (const [teamId, card] of Object.entries(best)) {
+            if (card.value > highestValue) {
+                highestValue = card.value;
+                winnerTeamId = teamId;
+                draw = false;
+                continue;
+            }
+            if (card.value === highestValue) {
+                draw = true;
+            }
+        }
+
+        if (draw) return undefined;
+        if (!winnerTeamId) return null;
+        return played.find((p) => p.team.id === winnerTeamId)?.team ?? null;
+    }
+
+    private getTeamOfPlayer(player: PlayerGame): Team<PlayerGame> | null {
+        for (const team of this.teams) {
+            if (team.players.includes(player)) {
+                return team;
+            }
+        }
+        return null;
     }
 }

@@ -1,5 +1,6 @@
 import { Team } from 'src/shared/entities/team.entity';
 import { Card } from '../entities/card.entity';
+import { PlayerGame } from '../entities/player-game.entity';
 
 export type RoundValues = 1 | 3 | 6 | 9 | 12;
 
@@ -16,10 +17,15 @@ export type TrucoStatus =
           pointsInCaseOfAccept: TrucoPoints;
       };
 
+export type RoundCardPlayed = {
+    card: Card;
+    team: Team<PlayerGame>;
+};
+
 export type RoundStatus = {
     onGoing: boolean;
     roundNumber: number;
-    cardsPlayed: Card[];
+    cardsPlayed: RoundCardPlayed[];
 };
 
 export type RoundHistory<T> =

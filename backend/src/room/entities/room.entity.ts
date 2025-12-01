@@ -1,44 +1,45 @@
 import { Player } from 'src/player/entities/player.entity';
 import { RoomDtoOut } from '../dtos/room.dto.out';
-import { Teams } from 'src/shared/entities/team.entity';
+import { Team, Teams } from 'src/shared/entities/team.entity';
+import { PlayerDtoOut } from 'src/player/dtos/player.dto.out';
 
 export class Room {
     id: string;
     name: string;
     players: Set<Player>;
-    teams: Teams<Player | null>;
+    teams: Teams<Player>;
     playersReady: Set<string> = new Set();
 
     constructor(name: string) {
         this.id = crypto.randomUUID();
         this.name = name;
-        this.teams = [
-            [null, null],
-            [null, null],
-        ];
+        this.teams = [new Team(), new Team()];
         this.players = new Set();
     }
 
     addPlayer(player: Player): boolean {
         if (this.players.has(player)) return false;
 
-        return this.goThroughAllPlayersTeam((i, j) => {
-            if (this.teams[i][j]) return false;
-            this.teams[i][j] = player;
+        for (const team of this.teams) {
+            if (team?.isFull()) continue;
+            team?.addPlayer(player);
             this.players.add(player);
             return true;
-        });
+        }
+
+        return false;
     }
 
     removePlayer(player: Player): boolean {
         if (!this.players.has(player)) return false;
 
-        return this.goThroughAllPlayersTeam((i, j) => {
-            if (!this.teams[i][j]) return false;
-            this.teams[i][j] = null;
+        for (const team of this.teams) {
+            if (!team.players.includes(player)) continue;
+            team?.removePlayer(player);
             this.players.delete(player);
             return true;
-        });
+        }
+        return false;
     }
 
     toggleIsReady(player: Player): boolean {
@@ -57,45 +58,33 @@ export class Room {
     }
 
     delete(): void {
-        this.goThroughAllPlayersTeam((i, j) => {
-            const player = this.teams[i][j];
-            if (!player) return true;
-            this.teams[i][j] = null;
-            if (!this.players.has(player)) return true;
-            this.players.delete(player);
-            return true;
-        });
-        this.playersReady = new Set();
-    }
-
-    private goThroughAllPlayersTeam(
-        callback: (i: number, j: number) => boolean,
-    ): boolean {
-        for (let i = 0; i < this.teams.length; i++) {
-            for (let j = 0; j < this.teams[0].length; j++) {
-                if (!callback(i, j)) return false;
+        for (const team of this.teams) {
+            if (!team) continue;
+            for (const player of team.players) {
+                if (!player) continue;
+                team.removePlayer(player);
+                if (!this.players.has(player)) continue;
+                this.players.delete(player);
             }
         }
-
-        return true;
+        this.playersReady = new Set();
     }
 
     toDto(): RoomDtoOut {
         const [team1, team2] = this.teams;
 
+        const formatTeam = (team: Team<Player>) => {
+            const p = team.players;
+            return [p[0] ? p[0].toDto() : null, p[1] ? p[1].toDto() : null] as [
+                PlayerDtoOut | null,
+                PlayerDtoOut | null,
+            ];
+        };
+
         return {
             id: this.id,
             name: this.name,
-            teams: [
-                [
-                    team1[0] ? team1[0].toDto() : null,
-                    team1[1] ? team1[1].toDto() : null,
-                ],
-                [
-                    team2[0] ? team2[0].toDto() : null,
-                    team2[1] ? team2[1].toDto() : null,
-                ],
-            ],
+            teams: [formatTeam(team1), formatTeam(team2)],
             playersReady: Array.from(this.playersReady),
         };
     }
