@@ -9,17 +9,30 @@ import LeftSign from '../../../../components/left-sign';
 import AnimatedPage from '../../../../components/animated-page';
 import RoomsList from '../RoomsList/rooms-list';
 import { Socket } from 'socket.io-client';
-import { RoomDTO } from '../../../../types/dtos';
+import { RoomDTO, CardDTO, PlayerDTO } from '../../../../types/dtos';
 import ClickButton from '../../../../components/click-button';
+import GamePage from '../../GameLogic/game-page';
 
 interface RoomPageProps {
     roomId: string | undefined;
 }
 
+interface GameInitializedData {
+    gameId: string;
+    myPlayerId: string;
+    myHand: CardDTO[];
+    currentPlayer: PlayerDTO;
+}
+
 const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
     const [showRoomsList, setShowRoomsList] = useState<boolean>(false);
-
     const [roomData, setRoomData] = useState<Room | null>(null);
+    const [gameStarted, setGameStarted] = useState<boolean>(false);
+    const [gameId, setGameId] = useState<string>('');
+    const [myPlayerId, setMyPlayerId] = useState<string>('');
+    const [initialHand, setInitialHand] = useState<CardDTO[]>([]);
+    const [initialCurrentPlayer, setInitialCurrentPlayer] =
+        useState<PlayerDTO | null>(null);
 
     const { username, setBackgroundColor, setDefaultBackgroundColor } =
         useGameBackgroundContext();
@@ -73,15 +86,32 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
             setRoomData(roomData as Room);
         });
 
-        socketObject.once('gameStarted', () => {
-            console.log('game started');
+        socketObject.on('game:initialized', (data: GameInitializedData) => {
+            console.log('Game initialized!', data);
+            setGameId(data.gameId);
+            setMyPlayerId(data.myPlayerId);
+            setInitialHand(data.myHand);
+            setInitialCurrentPlayer(data.currentPlayer);
+            setGameStarted(true);
         });
 
         return () => {
             socketObject.off('room:update');
+            socketObject.off('game:initialized');
             setDefaultBackgroundColor();
         };
     }, []);
+
+    if (gameStarted && gameId && initialCurrentPlayer && myPlayerId) {
+        return (
+            <GamePage
+                gameId={gameId}
+                myPlayerId={myPlayerId}
+                initialHand={initialHand}
+                initialCurrentPlayer={initialCurrentPlayer}
+            />
+        );
+    }
 
     return (
         <>

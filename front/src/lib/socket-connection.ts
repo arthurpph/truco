@@ -65,4 +65,20 @@ class SocketConnection {
     public toggleIsReady(data: RoomPlayerResponseDTO): void {
         this.socket.emit('room:isready', data);
     }
+
+    public playCard(data: any): void {
+        this.socket.emit('game:playcard', data);
+    }
+
+    public askTruco(data: any): void {
+        this.socket.emit('game:truco:ask', data);
+    }
+
+    public acceptTruco(data: any): void {
+        this.socket.emit('game:truco:accept', data);
+    }
+
+    public rejectTruco(data: any): void {
+        this.socket.emit('game:truco:reject', data);
+    }
 }
