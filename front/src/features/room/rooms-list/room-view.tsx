@@ -1,6 +1,6 @@
-import { useGameBackgroundContext } from '../../../../contexts/game-context';
-import getSocketConnection from '../../../../lib/socket-connection';
-import { Room, ShowRoomInfo } from '../../../../types/models';
+import { useGameBackgroundContext } from "../../../contexts/game-context";
+import getSocketConnection from "../../../lib/socket-connection";
+import { Room, ShowRoomInfo } from "../../../types/models";
 
 interface RoomProps {
     room: Room;

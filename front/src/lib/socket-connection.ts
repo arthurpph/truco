@@ -6,13 +6,13 @@ import {
     RoomPlayerResponseDTO,
 } from '../types/dtos';
 import { Room } from '../types/models';
-import constants from '../data/constants.json';
+import { WEBSOCKET_URL } from '../data/constants';
 
 let _instance: SocketConnection;
 
 export default function getSocketConnection() {
     if (!_instance) {
-        _instance = new SocketConnection(constants.WEBSOCKET_URL);
+        _instance = new SocketConnection(WEBSOCKET_URL);
     }
     return _instance;
 }

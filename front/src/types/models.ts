@@ -1,35 +1,35 @@
-export interface Player {
+export type Player = {
     id: string;
     name: string;
 }
 
 export type Team = [Player, Player];
 
-export interface Room {
+export type Room = {
     id: string;
     name: string;
     teams: [Team, Team];
     playersReady: string[];
 }
 
-export interface ShowRoomInfo {
+export type ShowRoomInfo = {
     show: boolean;
     roomId?: string;
 }
 
-export interface Card {
+export type Card = {
     card: string;
     suit: 'copas' | 'espadas' | 'ouros' | 'paus' | 'manilha';
     value: number;
 }
 
-export interface GamePlayer {
+export type GamePlayer = {
     id: string;
     name: string;
     hand: Card[];
 }
 
-export interface GameState {
+export type GameState = {
     gameId: string;
     players: GamePlayer[];
     currentPlayer: Player;

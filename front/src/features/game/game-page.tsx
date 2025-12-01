@@ -1,31 +1,24 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useGameBackgroundContext } from '../../../contexts/game-context';
-import GameBoard from '../../../components/game-board';
-import PlayerHand from '../../../components/player-hand';
-import TrucoModal from '../../../components/truco-modal';
-import TrucoWaiting from '../../../components/truco-waiting';
-import RoundResult from '../../../components/round-result';
-import ClickButton from '../../../components/click-button';
-import {
-    CardDTO,
-    PlayerDTO,
-    CardPlayedDTO,
-    RoundEndedDTO,
-    RoundStartedDTO,
-    TrucoAskedDTO,
-} from '../../../types/dtos';
-import getSocketConnection from '../../../lib/socket-connection';
 import { Socket } from 'socket.io-client';
+import { CardDTO, CardPlayedDTO, PlayerDTO, RoundEndedDTO, RoundStartedDTO, TrucoAskedDTO } from '../../types/dtos';
+import { useGameBackgroundContext } from '../../contexts/game-context';
+import getSocketConnection from '../../lib/socket-connection';
+import GameBoard from '../../components/game-board';
+import ClickButton from '../../components/click-button';
+import PlayerHand from '../../components/player-hand';
+import TrucoModal from '../../components/truco-modal';
+import RoundResult from '../../components/round-result';
+import TrucoWaiting from '../../components/truco-waiting';
 
-interface GamePageProps {
+type GamePageProps = {
     gameId: string;
     myPlayerId: string;
     initialHand: CardDTO[];
     initialCurrentPlayer: PlayerDTO;
 }
 
-interface GameState {
+type GameState = {
     currentPlayer: PlayerDTO | null;
     myHand: CardDTO[];
     playedCards: Array<{ playerId: string; card?: CardDTO; isDark: boolean }>;
@@ -217,7 +210,6 @@ const GamePage: React.FC<GamePageProps> = ({
 
     return (
         <div className="relative w-full h-full overflow-hidden bg-gradient-to-br from-emerald-900 to-emerald-950">
-            {/* Background decoration */}
             <div className="absolute inset-0 opacity-5 text-white/20">
                 <div className="absolute top-12 left-16 text-8xl rotate-12">
                     ♠
@@ -233,9 +225,7 @@ const GamePage: React.FC<GamePageProps> = ({
                 </div>
             </div>
 
-            {/* Main content */}
             <div className="relative flex flex-col h-full p-8">
-                {/* Header */}
                 <div className="flex justify-between items-center mb-6">
                     <motion.div
                         initial={{ x: -50, opacity: 0 }}
@@ -278,14 +268,12 @@ const GamePage: React.FC<GamePageProps> = ({
                     </motion.div>
                 </div>
 
-                {/* Game board */}
                 <div className="flex-1 flex flex-col justify-center items-center gap-8">
                     <GameBoard
                         playedCards={gameState.playedCards}
                         roundValue={gameState.roundValue}
                     />
 
-                    {/* Truco button */}
                     {canAskTruco && (
                         <motion.div
                             initial={{ y: 50, opacity: 0 }}
@@ -301,7 +289,6 @@ const GamePage: React.FC<GamePageProps> = ({
                     )}
                 </div>
 
-                {/* Player's hand */}
                 <div className="mt-auto">
                     <PlayerHand
                         cards={gameState.myHand}
@@ -310,7 +297,6 @@ const GamePage: React.FC<GamePageProps> = ({
                     />
                 </div>
 
-                {/* Dark card option button */}
                 {gameState.isMyTurn && gameState.myHand.length > 0 && (
                     <motion.div
                         className="absolute bottom-8 left-8"
@@ -329,7 +315,6 @@ const GamePage: React.FC<GamePageProps> = ({
                 )}
             </div>
 
-            {/* Truco request modal */}
             <TrucoModal
                 isOpen={
                     gameState.trucoRequest !== null &&
@@ -342,7 +327,6 @@ const GamePage: React.FC<GamePageProps> = ({
                 onReject={handleTrucoReject}
             />
 
-            {/* Truco waiting modal - quando EU pedi truco */}
             <TrucoWaiting
                 isOpen={
                     gameState.trucoRequest !== null &&
@@ -352,7 +336,6 @@ const GamePage: React.FC<GamePageProps> = ({
                 points={gameState.trucoRequest?.points || 0}
             />
 
-            {/* Truco accepted modal */}
             <TrucoModal
                 isOpen={showTrucoAccepted}
                 isRequest={false}
@@ -360,7 +343,6 @@ const GamePage: React.FC<GamePageProps> = ({
                 onClose={() => setShowTrucoAccepted(false)}
             />
 
-            {/* Round result modal */}
             <RoundResult
                 isVisible={gameState.roundEnded}
                 roundData={gameState.roundEndedData}

@@ -1,4 +1,4 @@
-import Game from './pages/Game/game';
+import Game from "./features/game/game";
 
 const App = () => {
     return <Game />;

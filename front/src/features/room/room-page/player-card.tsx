@@ -1,4 +1,4 @@
-import { Player } from '../../../../types/models';
+import { Player } from "../../../types/models";
 
 const PlayerCard = ({
     player,

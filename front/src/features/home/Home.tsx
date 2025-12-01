@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import RoomsList from './Rooms/RoomsList/rooms-list';
 import { useGameBackgroundContext } from '../../contexts/game-context';
+import RoomsList from '../room/rooms-list/rooms-list';
 
 const AnimatedPage = ({
     children,

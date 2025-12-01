@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import ClickButton from '../../../../components/click-button';
-import getSocketConnection from '../../../../lib/socket-connection';
-import { Room, ShowRoomInfo } from '../../../../types/models';
 import CreateRoom from '../create-room';
-import AnimatedPage from '../../../../components/animated-page';
-import LeftSign from '../../../../components/left-sign';
-import ClickDiv from '../../../../components/click-div';
-import Home from '../../home';
 import { AnimatePresence } from 'framer-motion';
-import RoomPage from '../RoomPage/room-page';
+import RoomPage from '../room-page/room-page';
 import RoomView from './room-view';
+import { Room, ShowRoomInfo } from '../../../types/models';
+import getSocketConnection from '../../../lib/socket-connection';
+import AnimatedPage from '../../../components/animated-page';
+import Home from '../../home/Home';
+import ClickDiv from '../../../components/click-div';
+import LeftSign from '../../../components/left-sign';
+import ClickButton from '../../../components/click-button';
 
 const RoomsList = () => {
     const [rooms, setRooms] = useState<Room[]>([]);

@@ -1,18 +1,18 @@
-export interface CreateRoomDTO {
+export type CreateRoomDTO = {
     roomName: string;
     playerName: string;
 }
 
 export type TeamDTO = [RoomPlayerRequestDTO, RoomPlayerRequestDTO];
 
-export interface RoomDTO {
+export type RoomDTO = {
     id: string;
     name: string;
     teams: [TeamDTO, TeamDTO];
     playersReady: string[];
 }
 
-export interface RoomPlayerResponseDTO {
+export type RoomPlayerResponseDTO = {
     roomId: string;
     playerName: string;
 }
@@ -22,69 +22,68 @@ export type RoomPlayerRequestDTO = {
     name: string;
 };
 
-export interface JoinRoomDTO {
+export type JoinRoomDTO = {
     roomId: string;
     playerName: string;
 }
 
-export interface LeaveRoomDTO {
+export type LeaveRoomDTO = {
     roomId: string;
     playerName: string;
 }
 
-// Game DTOs
-export interface PlayerDTO {
+export type PlayerDTO = {
     id: string;
     name: string;
 }
 
-export interface TeamGameDTO {
+export type TeamGameDTO = {
     id: string;
     players: PlayerDTO[];
 }
 
-export interface CardDTO {
+export type CardDTO = {
     card: string;
     suit: 'copas' | 'espadas' | 'ouros' | 'paus' | 'manilha';
     value: number;
 }
 
-export interface PlayCardDTO {
+export type PlayCardDTO = {
     gameId: string;
     playerId: string;
     card: CardDTO;
     isDark: boolean;
 }
 
-export interface TrucoAskDTO {
+export type TrucoAskDTO = {
     gameId: string;
     playerId: string;
 }
 
-export interface CardPlayedDTO {
+export type CardPlayedDTO = {
     isDark: boolean;
     card?: CardDTO;
     playerId: string;
     currentPlayer: PlayerDTO;
 }
 
-export interface RoundCardPlayedDTO {
+export type RoundCardPlayedDTO = {
     card: CardDTO;
     team: TeamGameDTO;
 }
 
-export interface RoundEndedDTO {
+export type RoundEndedDTO = {
     draw: boolean;
     teamWinner?: TeamGameDTO;
     cardsPlayed: RoundCardPlayedDTO[];
 }
 
-export interface RoundStartedDTO {
+export type RoundStartedDTO = {
     currentPlayer: PlayerDTO;
     myHand: CardDTO[];
 }
 
-export interface TrucoAskedDTO {
+export type TrucoAskedDTO = {
     playerFrom: string;
     playerFromName: string;
     playerTo: string;
@@ -92,7 +91,7 @@ export interface TrucoAskedDTO {
     pointsInCaseOfAccept: 3 | 6 | 9 | 12;
 }
 
-export interface GameStartDTO {
+export type GameStartDTO = {
     gameId: string;
     players: PlayerDTO[];
     currentPlayer: PlayerDTO;

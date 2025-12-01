@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useGameBackgroundContext } from '../../../../contexts/game-context';
-import getSocketConnection from '../../../../lib/socket-connection';
-import { Room } from '../../../../types/models';
 import TeamSection from './team-section';
 import { AnimatePresence } from 'framer-motion';
-import ClickDiv from '../../../../components/click-div';
-import LeftSign from '../../../../components/left-sign';
-import AnimatedPage from '../../../../components/animated-page';
-import RoomsList from '../RoomsList/rooms-list';
 import { Socket } from 'socket.io-client';
-import { RoomDTO, CardDTO, PlayerDTO } from '../../../../types/dtos';
-import ClickButton from '../../../../components/click-button';
-import GamePage from '../../GameLogic/game-page';
+import { CardDTO, PlayerDTO, RoomDTO } from '../../../types/dtos';
+import { Room } from '../../../types/models';
+import { useGameBackgroundContext } from '../../../contexts/game-context';
+import getSocketConnection from '../../../lib/socket-connection';
+import GamePage from '../../game/game-page';
+import AnimatedPage from '../../../components/animated-page';
+import RoomsList from '../rooms-list/rooms-list';
+import ClickDiv from '../../../components/click-div';
+import LeftSign from '../../../components/left-sign';
+import ClickButton from '../../../components/click-button';
 
 interface RoomPageProps {
     roomId: string | undefined;

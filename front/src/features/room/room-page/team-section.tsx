@@ -1,4 +1,4 @@
-import { Team } from '../../../../types/models';
+import { Team } from '../../../types/models';
 import PlayerCard from './player-card';
 
 const TeamSection = ({

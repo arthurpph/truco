@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Home from './home';
+import Home from '../home/Home';
 import { GameBackgroundContext } from '../../contexts/game-context';
 
 const Game = () => {
