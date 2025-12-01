@@ -33,4 +33,10 @@ export class GameGateway {
         const { gameId, playerId } = dto;
         this.gameService.acceptTruco(gameId, playerId);
     }
+
+    @SubscribeMessage('game:truco:reject')
+    rejectTruco(@MessageBody() dto: TrucoAskDto): void {
+        const { gameId, playerId } = dto;
+        this.gameService.rejectTruco(gameId, playerId);
+    }
 }

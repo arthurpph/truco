@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Room } from './entities/room.entity';
 import { Player } from 'src/player/entities/player.entity';
-import { AppGateway } from 'src/app.gateway';
 
 @Injectable()
 export class RoomService {
     private rooms = new Map<string, Room>(); // id -> room object
-
-    constructor(private readonly appGateway: AppGateway) {}
 
     getAll(): Room[] {
         return Array.from(this.rooms.values());

@@ -38,7 +38,7 @@ export class Game {
         const teamSize = teams[0].players.length;
         for (let j = 0; j < teamSize; j++) {
             for (let i = 0; i < teams.length; i++) {
-                this.players.push(teams[i][j]);
+                this.players.push(teams[i].players[j]);
             }
         }
     }

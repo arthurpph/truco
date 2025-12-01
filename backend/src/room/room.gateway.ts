@@ -16,6 +16,7 @@ import { ToggleIsReadyDto } from './dtos/toogle-is-ready.dto.in';
 import { RoomDtoOut } from './dtos/room.dto.out';
 import { GameService } from 'src/game/game.service';
 import { AppGateway } from 'src/app.gateway';
+import { PLAYERS_TO_START } from './room.constant';
 
 @WebSocketGateway({ cors: { origin: 'http://localhost:5173' } })
 export class RoomGateway {
@@ -82,7 +83,10 @@ export class RoomGateway {
         if (!player) return;
         const room = this.roomService.toggleIsReady(roomId, player);
         if (!room) return;
-        if (this.checkIfAllPlayersReady(room)) {
+        if (
+            room.players.size >= PLAYERS_TO_START &&
+            this.checkIfAllPlayersReady(room)
+        ) {
             this.startGame(room);
             return;
         }
@@ -112,6 +116,9 @@ export class RoomGateway {
     }
 
     private startGame(room: Room): void {
+        for (const player of room.players) {
+            if (!player) return;
+        }
         this.gameService.create(room);
         this.emitToRoom(room, 'game:start', room.toDto());
     }

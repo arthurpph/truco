@@ -11,8 +11,10 @@ import { CardPlayedDtoOut } from './dtos/card-played.dto.out';
 import { RoundEndedDtoOut } from './dtos/round-ended.dto.out';
 import { RoundStartedDtoOut } from './dtos/round-started.dto.out';
 import { RoundHistory } from './types/game.type';
+import { GameInitializedDtoOut } from './dtos/game-initialized.dto.out';
 
 type EventOut =
+    | 'game:initialized'
     | 'game:cardplayed'
     | 'game:truco:asked'
     | 'game:truco:accepted'
@@ -43,6 +45,17 @@ export class GameService {
         this.roomService.delete(room.id);
         this.games.set(game.id, game);
         game.shuffleAndGiveCards();
+
+        for (const player of game.players) {
+            const socket = this.appGateway.get(player.id);
+            if (!socket) continue;
+            socket.emit('game:initialized', {
+                gameId: game.id,
+                myHand: player.hand,
+                currentPlayer: game.getCurrentPlayer().toDto(),
+            });
+        }
+
         return game;
     }
 

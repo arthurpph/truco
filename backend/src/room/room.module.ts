@@ -9,8 +9,8 @@ import { AppModule } from 'src/app.module';
     providers: [RoomGateway, RoomService],
     exports: [RoomService],
     imports: [
-        forwardRef(() => AppModule),
         forwardRef(() => GameModule),
+        forwardRef(() => AppModule),
         PlayerModule,
     ],
 })
