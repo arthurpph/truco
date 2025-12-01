@@ -4,6 +4,11 @@ import { Card } from './card.entity';
 export class PlayerGame extends Player {
     hand: Card[] = [];
 
+    constructor(id: string, name: string, socketId: string) {
+        super(name, socketId);
+        this.id = id;
+    }
+
     playCard(card: Card): Card[] | null {
         const cardIndex = this.hand.findIndex(
             (c) => c.suit === card.suit && c.value === card.value,

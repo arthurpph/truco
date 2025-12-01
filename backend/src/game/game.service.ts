@@ -38,7 +38,9 @@ export class GameService {
             const players = room.teams[i].players;
             for (const player of players) {
                 if (!player) return null;
-                teams[i].addPlayer(new PlayerGame(player.id, player.name));
+                teams[i].addPlayer(
+                    new PlayerGame(player.id, player.name, player.socketId),
+                );
             }
         }
         const game = new Game(room.id, teams);
@@ -46,68 +48,89 @@ export class GameService {
         this.games.set(game.id, game);
         game.shuffleAndGiveCards();
 
-        for (const player of game.players) {
-            const socket = this.appGateway.get(player.id);
-            if (!socket) continue;
-            socket.emit('game:initialized', {
-                gameId: game.id,
-                myHand: player.hand,
-                currentPlayer: game.getCurrentPlayer().toDto(),
-            });
-        }
-
+        this.broadcastStateUpdateBasedOnPlayerState(
+            game,
+            'game:initialized',
+            (player) => {
+                const gameInitializedDtoOut: GameInitializedDtoOut = {
+                    gameId: game.id,
+                    myPlayerId: player.id,
+                    myHand: player.hand,
+                    currentPlayer: game.getCurrentPlayer().toDto(),
+                };
+                return gameInitializedDtoOut;
+            },
+        );
         return game;
     }
 
     playCard(
         gameId: string,
-        playerId: string,
+        socketId: string,
         card: Card,
         isDark: boolean,
     ): void {
         const game = this.games.get(gameId);
         if (!game) return;
-        const playCardResult = game.playCard(playerId, card);
+        const player = game.players.find((p) => p.socketId === socketId);
+        if (!player) return;
+        const playCardResult = game.playCard(player.id, card);
         if (!playCardResult) return;
         const { roundEnded } = playCardResult;
         const cardPlayedDtoOut: CardPlayedDtoOut = {
             isDark,
             ...(!isDark && { card }),
-            playerId,
-            currentPlayer: game.getCurrentPlayer(),
+            playerId: player.id,
+            currentPlayer: game.getCurrentPlayer().toDto(),
         } as CardPlayedDtoOut;
         this.broadcastStateUpdate(game, 'game:cardplayed', cardPlayedDtoOut);
         if (!roundEnded) return;
         this.handleRoundEnded(game, playCardResult);
     }
 
-    askTruco(gameId: string, playerId: string): void {
+    askTruco(gameId: string, socketId: string): void {
         const game = this.games.get(gameId);
         if (!game) return;
-        if (game.getCurrentPlayer().id !== playerId) return;
-        const trucoStatus = game.trucoAsk(playerId);
+        const player = game.players.find((p) => p.socketId === socketId);
+        if (!player) return;
+        if (game.getCurrentPlayer().id !== player.id) return;
+        const trucoStatus = game.trucoAsk(player.id);
         if (!trucoStatus || !trucoStatus.onGoing) return;
+
+        const playerFrom = game.players.find(
+            (p) => p.id === trucoStatus.playerFrom,
+        );
+        const playerTo = game.players.find(
+            (p) => p.id === trucoStatus.playerTo,
+        );
+
         const dto: TrucoAskedDtoOut = {
             playerFrom: trucoStatus.playerFrom,
+            playerFromName: playerFrom?.name || 'Jogador',
             playerTo: trucoStatus.playerTo,
+            playerToName: playerTo?.name || 'Jogador',
             pointsInCaseOfAccept: trucoStatus.pointsInCaseOfAccept,
         };
         this.broadcastStateUpdate(game, 'game:truco:asked', dto);
     }
 
-    acceptTruco(gameId: string, playerId: string): void {
+    acceptTruco(gameId: string, socketId: string): void {
         const game = this.games.get(gameId);
         if (!game) return;
-        if (game.getNextPlayerToPlay().id !== playerId) return;
+        const player = game.players.find((p) => p.socketId === socketId);
+        if (!player) return;
+        if (game.getNextPlayerToPlay().id !== player.id) return;
         const trucoStatus = game.trucoAccept();
         if (!trucoStatus || trucoStatus.onGoing) return;
         this.broadcastStateUpdate(game, 'game:truco:accepted', null);
     }
 
-    rejectTruco(gameId: string, playerId: string): void {
+    rejectTruco(gameId: string, socketId: string): void {
         const game = this.games.get(gameId);
         if (!game) return;
-        if (game.getNextPlayerToPlay().id !== playerId) return;
+        const player = game.players.find((p) => p.socketId === socketId);
+        if (!player) return;
+        if (game.getNextPlayerToPlay().id !== player.id) return;
         const trucoStatus = game.trucoReject();
         if (!trucoStatus || trucoStatus.onGoing) return;
         this.broadcastStateUpdate(game, 'game:truco:rejected', null);
@@ -115,9 +138,21 @@ export class GameService {
 
     private broadcastStateUpdate(game: Game, event: EventOut, data: any) {
         for (const player of game.players) {
-            const socket = this.appGateway.get(player.id);
+            const socket = this.appGateway.get(player.socketId);
             if (!socket) continue;
             socket.emit(event, data);
+        }
+    }
+
+    private broadcastStateUpdateBasedOnPlayerState(
+        game: Game,
+        event: EventOut,
+        callback: (player: PlayerGame) => any,
+    ) {
+        for (const player of game.players) {
+            const socket = this.appGateway.get(player.socketId);
+            if (!socket) continue;
+            socket.emit(event, callback(player));
         }
     }
 
@@ -138,17 +173,21 @@ export class GameService {
                 teamWinner,
             };
         }
-        const roundStartedDtoOut: RoundStartedDtoOut = {
-            currentPlayer: game.getCurrentPlayer().toDto(),
-        };
 
         this.broadcastStateUpdate(game, 'game:roundended', roundEndedDtoOut);
         setTimeout(() => {
             game.startNewRound();
-            this.broadcastStateUpdate(
+
+            this.broadcastStateUpdateBasedOnPlayerState(
                 game,
                 'game:roundstarted',
-                roundStartedDtoOut,
+                (player) => {
+                    const roundStartedDtoOut: RoundStartedDtoOut = {
+                        currentPlayer: game.getCurrentPlayer().toDto(),
+                        myHand: player.hand,
+                    };
+                    return roundStartedDtoOut;
+                },
             );
         }, 5000);
     }

@@ -144,6 +144,7 @@ export class Game {
         this.roundStatus.onGoing = true;
         this.roundStatus.cardsPlayed = [];
         this.currentRoundCounter = 0;
+        this.shuffleAndGiveCards();
     }
 
     private roundEnded(): RoundHistory<PlayerGame> {

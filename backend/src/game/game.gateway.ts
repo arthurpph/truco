@@ -18,25 +18,25 @@ export class GameGateway {
 
     @SubscribeMessage('game:playcard')
     playCard(@MessageBody() dto: PlayCardDto): void {
-        const { gameId, playerId, card, isDark } = dto;
-        this.gameService.playCard(gameId, playerId, card, isDark);
+        const { gameId, socketId, card, isDark } = dto;
+        this.gameService.playCard(gameId, socketId, card, isDark);
     }
 
     @SubscribeMessage('game:truco:ask')
     askTruco(@MessageBody() dto: TrucoAskDto): void {
-        const { gameId, playerId } = dto;
-        this.gameService.askTruco(gameId, playerId);
+        const { gameId, socketId } = dto;
+        this.gameService.askTruco(gameId, socketId);
     }
 
     @SubscribeMessage('game:truco:accept')
     acceptTruco(@MessageBody() dto: TrucoAskDto): void {
-        const { gameId, playerId } = dto;
-        this.gameService.acceptTruco(gameId, playerId);
+        const { gameId, socketId } = dto;
+        this.gameService.acceptTruco(gameId, socketId);
     }
 
     @SubscribeMessage('game:truco:reject')
     rejectTruco(@MessageBody() dto: TrucoAskDto): void {
-        const { gameId, playerId } = dto;
-        this.gameService.rejectTruco(gameId, playerId);
+        const { gameId, socketId } = dto;
+        this.gameService.rejectTruco(gameId, socketId);
     }
 }

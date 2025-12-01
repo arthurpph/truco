@@ -1,8 +1,9 @@
+import { PlayerDtoOut } from 'src/player/dtos/player.dto.out';
+import { Card } from '../entities/card.entity';
+
 export class GameInitializedDtoOut {
     gameId: string;
-    myHand: any[];
-    currentPlayer: {
-        id: string;
-        name: string;
-    };
+    myPlayerId: string;
+    myHand: Card[];
+    currentPlayer: PlayerDtoOut;
 }

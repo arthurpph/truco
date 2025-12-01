@@ -1,4 +1,4 @@
 export class TrucoAskDto {
     gameId: string;
-    playerId: string;
+    socketId: string;
 }
