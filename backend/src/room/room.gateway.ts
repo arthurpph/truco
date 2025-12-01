@@ -91,7 +91,7 @@ export class RoomGateway {
 
     private emitToRoom(room: Room, event: string, data: any): void {
         for (const team of room.teams) {
-            for (const player of team) {
+            for (const player of team.players) {
                 if (!player) continue;
                 const client = this.appGateway.get(player.socketId);
                 if (!client) continue;
@@ -102,7 +102,7 @@ export class RoomGateway {
 
     private checkIfAllPlayersReady(room: Room): boolean {
         for (const team of room.teams) {
-            for (const player of team) {
+            for (const player of team.players) {
                 if (!player || !room.playersReady.has(player.id)) {
                     return false;
                 }
