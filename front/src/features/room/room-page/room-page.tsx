@@ -87,7 +87,6 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
         });
 
         socketObject.on('game:initialized', (data: GameInitializedData) => {
-            console.log('Game initialized!', data);
             setGameId(data.gameId);
             setMyPlayerId(data.myPlayerId);
             setInitialHand(data.myHand);
@@ -172,39 +171,69 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                                 </div>
 
                                 <div className="relative flex flex-col h-full">
-                                    <div className="flex items-center px-8 py-6 mb-4">
-                                        <ClickDiv
-                                            onClick={() =>
-                                                handleBackToRoomsList(
-                                                    roomData.id,
-                                                )
-                                            }
-                                            defaultStyles="cursor-pointer hover:scale-110 transition-transform mr-4"
-                                        >
-                                            <LeftSign />
-                                        </ClickDiv>
-                                        <h1 className="text-5xl font-black text-amber-400 tracking-tight">
-                                            {roomData.name}
-                                        </h1>
+                                    <div className="flex items-center justify-between px-8 py-6 mb-2">
+                                        <div className="flex items-center">
+                                            <ClickDiv
+                                                onClick={() =>
+                                                    handleBackToRoomsList(
+                                                        roomData.id,
+                                                    )
+                                                }
+                                                defaultStyles="cursor-pointer hover:scale-110 transition-transform mr-4"
+                                            >
+                                                <LeftSign />
+                                            </ClickDiv>
+                                            <div>
+                                                <h1 className="text-5xl font-black text-amber-400 tracking-tight">
+                                                    {roomData.name}
+                                                </h1>
+                                                <p className="text-emerald-500/80 text-sm mt-1">
+                                                    Aguardando jogadores
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-emerald-800/40 px-4 py-2 rounded-xl border border-emerald-700/50">
+                                            <span className="text-amber-300 font-bold text-lg">
+                                                {roomData.playersReady.length}
+                                            </span>
+                                            <span className="text-emerald-400/80 text-sm">
+                                                / 4 prontos
+                                            </span>
+                                        </div>
                                     </div>
 
-                                    <div className="flex-1 flex flex-col gap-6 px-8">
+                                    <div className="flex-1 flex flex-col gap-4 px-8">
                                         <TeamSection
                                             team={roomData.teams[0]}
                                             playersReady={roomData.playersReady}
                                             backgroundColor="bg-emerald-900/40"
+                                            teamLabel="Time 1"
                                         />
+                                        
+                                        <div className="flex items-center justify-center">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-px w-20 bg-emerald-700/50"></div>
+                                                <span className="text-amber-500/60 text-sm font-bold uppercase tracking-wider">vs</span>
+                                                <div className="h-px w-20 bg-emerald-700/50"></div>
+                                            </div>
+                                        </div>
+
                                         <TeamSection
                                             team={roomData.teams[1]}
                                             playersReady={roomData.playersReady}
                                             backgroundColor="bg-emerald-900/30"
+                                            teamLabel="Time 2"
                                         />
-                                        <div className="flex items-center justify-center py-8">
+                                        
+                                        <div className="flex flex-col items-center justify-center py-6 gap-3">
                                             <ClickButton
                                                 name="Estou pronto"
-                                                defaultStyles="bg-amber-500 hover:bg-amber-400 w-80 h-16 text-xl text-emerald-950 font-bold uppercase rounded-lg transition-colors cursor-pointer"
+                                                defaultStyles="bg-amber-500 hover:bg-amber-400 w-80 h-16 text-xl text-emerald-950 font-bold uppercase rounded-xl transition-all duration-200 cursor-pointer hover:shadow-lg hover:shadow-amber-500/20"
                                                 onClick={handleToggleIsReady}
                                             />
+                                            <p className="text-emerald-600/60 text-xs">
+                                                A partida inicia quando todos estiverem prontos
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

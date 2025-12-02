@@ -177,10 +177,10 @@ export const useGame = (gameId: string, playerId: string) => {
             }));
         });
 
-        socketObject.on('game:truco:accepted', () => {
+        socketObject.on('game:truco:accepted', (data: { roundValue: number }) => {
             setGameState((prev) => ({
                 ...prev,
-                roundValue: prev.trucoRequest?.points || prev.roundValue,
+                roundValue: data.roundValue,
                 trucoRequest: null,
             }));
         });

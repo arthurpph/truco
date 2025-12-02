@@ -16,6 +16,15 @@ export class PlayerService {
         return newPlayer;
     }
 
+    getBySocketId(socketId: string): Player | null {
+        for (const player of this.players.values()) {
+            if (player.socketId === socketId) {
+                return player;
+            }
+        }
+        return null;
+    }
+
     getByName(name: string): Player | null {
         for (const player of this.players.values()) {
             if (player.name === name) {
@@ -33,5 +42,9 @@ export class PlayerService {
             }
         }
         return null;
+    }
+
+    deleteById(id: string): boolean {
+        return this.players.delete(id);
     }
 }

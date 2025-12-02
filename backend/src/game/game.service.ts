@@ -122,7 +122,9 @@ export class GameService {
         if (game.getNextPlayerToPlay().id !== player.id) return;
         const trucoStatus = game.trucoAccept();
         if (!trucoStatus || trucoStatus.onGoing) return;
-        this.broadcastStateUpdate(game, 'game:truco:accepted', null);
+        this.broadcastStateUpdate(game, 'game:truco:accepted', {
+            roundValue: game.getRoundValue(),
+        });
     }
 
     rejectTruco(gameId: string, socketId: string): void {

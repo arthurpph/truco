@@ -71,6 +71,7 @@ export class RoomGateway {
         const player = this.playerService.getByName(playerName);
         if (!player) return null;
         const room = this.roomService.removePlayer(roomId, player);
+        this.playerService.deleteById(player.id);
         if (!room) return null;
         this.emitToRoom(room, 'room:update', room.toDto());
         return room.toDto();

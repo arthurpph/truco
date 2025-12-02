@@ -126,10 +126,10 @@ const GamePage: React.FC<GamePageProps> = ({
             }));
         });
 
-        socketObject.on('game:truco:accepted', () => {
+        socketObject.on('game:truco:accepted', (data: { roundValue: number }) => {
             setGameState((prev) => ({
                 ...prev,
-                roundValue: prev.trucoRequest?.points || prev.roundValue,
+                roundValue: data.roundValue,
                 trucoRequest: null,
             }));
         });

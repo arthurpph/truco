@@ -140,6 +140,10 @@ export class Game {
         return this.players[this.currentPlayerIndex];
     }
 
+    getRoundValue(): RoundValues {
+        return this.currentRoundValue;
+    }
+
     startNewRound(): void {
         this.roundStatus.onGoing = true;
         this.roundStatus.cardsPlayed = [];

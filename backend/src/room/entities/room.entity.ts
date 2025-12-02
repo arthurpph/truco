@@ -57,6 +57,10 @@ export class Room {
         return this.players.has(player);
     }
 
+    isEmpty(): boolean {
+        return this.players.size === 0;
+    }
+
     delete(): void {
         for (const team of this.teams) {
             if (!team) continue;

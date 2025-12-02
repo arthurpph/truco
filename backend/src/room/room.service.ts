@@ -37,8 +37,7 @@ export class RoomService {
 
     removePlayerFromAnyRoom(player: Player): Room | null {
         for (const room of this.rooms.values()) {
-            if (room.containsPlayer(player)) {
-                room.removePlayer(player);
+            if (this.removePlayer(room.id, player)) {
                 return room;
             }
         }
@@ -50,6 +49,9 @@ export class RoomService {
         if (!room) return null;
         if (!room.containsPlayer(player)) return null;
         room.removePlayer(player);
+        if (room.isEmpty()) {
+            this.delete(roomId);
+        }
         return room;
     }
 
