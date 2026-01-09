@@ -166,13 +166,20 @@ export class GameService {
 
         let roundEndedDtoOut: RoundEndedDtoOut;
         if (draw) {
-            roundEndedDtoOut = { draw, cardsPlayed };
+            roundEndedDtoOut = { draw, cardsPlayed, teamWinner: null };
         } else {
             const { teamWinner } = playCardResult;
+            const teamWinnerDto = {
+                ...teamWinner,
+                players: teamWinner.players.map((player) => ({
+                    id: player.id,
+                    name: player.name,
+                })),
+            };
             roundEndedDtoOut = {
                 draw,
                 cardsPlayed,
-                teamWinner,
+                teamWinner: teamWinnerDto,
             };
         }
 

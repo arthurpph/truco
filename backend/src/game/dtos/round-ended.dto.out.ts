@@ -1,12 +1,17 @@
 import { PlayerDtoOut } from 'src/player/dtos/player.dto.out';
-import { Team } from 'src/shared/entities/team.entity';
-import { Card } from '../entities/card.entity';
 import { RoundCardPlayed } from '../types/game.type';
+import { IsBoolean, ValidateNested } from 'class-validator';
 
-export type RoundEndedDtoOut =
-    | {
-          draw: false;
-          teamWinner: Team<PlayerDtoOut>;
-          cardsPlayed: RoundCardPlayed[];
-      }
-    | { draw: true; cardsPlayed: RoundCardPlayed[] };
+export class RoundEndedDtoOut {
+    @IsBoolean()
+    draw: boolean;
+
+    @ValidateNested()
+    teamWinner: {
+        id: string;
+        players: PlayerDtoOut[];
+    } | null;
+
+    @ValidateNested({ each: true })
+    cardsPlayed: RoundCardPlayed[];
+}

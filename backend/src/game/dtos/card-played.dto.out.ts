@@ -1,16 +1,17 @@
 import { PlayerDtoOut } from 'src/player/dtos/player.dto.out';
-import { Card } from '../entities/card.entity';
+import { type Card } from '../entities/card.entity';
+import { IsBoolean, IsUUID, ValidateNested } from 'class-validator';
 
-type BaseDto = {
+export class CardPlayedDtoOut {
+    @IsUUID()
     playerId: string;
-    currentPlayer: PlayerDtoOut;
-};
 
-export type CardPlayedDtoOut =
-    | ({
-          isDark: false;
-          card: Card;
-      } & BaseDto)
-    | ({
-          isDark: true;
-      } & BaseDto);
+    @ValidateNested()
+    currentPlayer: PlayerDtoOut;
+
+    @IsBoolean()
+    isDark: boolean;
+
+    @ValidateNested()
+    card: Card | null;
+}

@@ -1,8 +1,13 @@
-import { Card } from '../entities/card.entity';
+import { IsBoolean, IsUUID, ValidateNested } from 'class-validator';
+import { type Card } from '../entities/card.entity';
 
 export class PlayCardDto {
+    @IsUUID()
     gameId: string;
-    socketId: string;
+
+    @ValidateNested()
     card: Card;
+
+    @IsBoolean()
     isDark: boolean;
 }
