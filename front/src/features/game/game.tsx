@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Home from '../home/Home';
-import { GameBackgroundContext } from '../../contexts/game-context';
+import { GameBackgroundContext } from '../../contexts/ui-context';
 
 const Game = () => {
     const [backgroundColor, setBackgroundColor] = useState<string>('bg-orange');

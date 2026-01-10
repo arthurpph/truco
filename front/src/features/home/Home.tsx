@@ -1,44 +1,8 @@
 import React, { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useGameBackgroundContext } from '../../contexts/game-context';
+import { AnimatePresence } from 'framer-motion';
+import { useGameBackgroundContext } from '../../contexts/ui-context';
 import RoomsList from '../room/rooms-list/rooms-list';
-
-const AnimatedPage = ({
-    children,
-    startDirection,
-}: {
-    children: React.ReactNode;
-    startDirection: string;
-}) => {
-    const variants = {
-        initial: {
-            x: startDirection === 'left' ? -100 : 100,
-            opacity: 0,
-        },
-        animate: {
-            x: 0,
-            opacity: 1,
-            transition: { duration: 0.4 },
-        },
-        exit: {
-            x: startDirection === 'left' ? 100 : -100,
-            opacity: 0,
-            transition: { duration: 0.3 },
-        },
-    };
-
-    return (
-        <motion.div
-            variants={variants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="w-full h-full"
-        >
-            {children}
-        </motion.div>
-    );
-};
+import AnimatedPage from './components/animated-page';
 
 const Home = () => {
     const { setUsername: setContextUsername } = useGameBackgroundContext();

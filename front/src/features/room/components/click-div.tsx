@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import clickSound from '../assets/clicksound.mp3';
+import clickSound from '../../../assets/clicksound.mp3';
 
 interface ClickDivProps {
     defaultStyles?: string;

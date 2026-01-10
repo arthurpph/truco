@@ -4,14 +4,14 @@ import { AnimatePresence } from 'framer-motion';
 import { Socket } from 'socket.io-client';
 import { CardDTO, PlayerDTO, RoomDTO } from '../../../types/dtos';
 import { Room } from '../../../types/models';
-import { useGameBackgroundContext } from '../../../contexts/game-context';
+import { useGameBackgroundContext } from '../../../contexts/ui-context';
 import getSocketConnection from '../../../lib/socket-connection';
 import GamePage from '../../game/game-page';
-import AnimatedPage from '../../../components/animated-page';
 import RoomsList from '../rooms-list/rooms-list';
-import ClickDiv from '../../../components/click-div';
-import LeftSign from '../../../components/left-sign';
+import ClickDiv from '../components/click-div';
+import LeftSign from '../components/left-sign';
 import ClickButton from '../../../components/click-button';
+import AnimatedPage from '../components/animated-page';
 
 interface RoomPageProps {
     roomId: string | undefined;
@@ -209,11 +209,13 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                                             backgroundColor="bg-emerald-900/40"
                                             teamLabel="Time 1"
                                         />
-                                        
+
                                         <div className="flex items-center justify-center">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-px w-20 bg-emerald-700/50"></div>
-                                                <span className="text-amber-500/60 text-sm font-bold uppercase tracking-wider">vs</span>
+                                                <span className="text-amber-500/60 text-sm font-bold uppercase tracking-wider">
+                                                    vs
+                                                </span>
                                                 <div className="h-px w-20 bg-emerald-700/50"></div>
                                             </div>
                                         </div>
@@ -224,7 +226,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                                             backgroundColor="bg-emerald-900/30"
                                             teamLabel="Time 2"
                                         />
-                                        
+
                                         <div className="flex flex-col items-center justify-center py-6 gap-3">
                                             <ClickButton
                                                 name="Estou pronto"
@@ -232,7 +234,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomId }) => {
                                                 onClick={handleToggleIsReady}
                                             />
                                             <p className="text-emerald-600/60 text-xs">
-                                                A partida inicia quando todos estiverem prontos
+                                                A partida inicia quando todos
+                                                estiverem prontos
                                             </p>
                                         </div>
                                     </div>

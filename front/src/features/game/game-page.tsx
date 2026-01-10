@@ -1,39 +1,22 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Socket } from 'socket.io-client';
-import { CardDTO, CardPlayedDTO, PlayerDTO, RoundEndedDTO, RoundStartedDTO, TrucoAskedDTO } from '../../types/dtos';
-import { useGameBackgroundContext } from '../../contexts/game-context';
-import getSocketConnection from '../../lib/socket-connection';
-import GameBoard from '../../components/game-board';
+import { useGameBackgroundContext } from '../../contexts/ui-context';
+import GameBoard from './components/game-board.tsx';
 import ClickButton from '../../components/click-button';
-import PlayerHand from '../../components/player-hand';
-import TrucoModal from '../../components/truco-modal';
-import RoundResult from '../../components/round-result';
-import TrucoWaiting from '../../components/truco-waiting';
+import PlayerHand from './components/player-hand.tsx';
+import TrucoModal from './components/truco-modal.tsx';
+import RoundResult from './components/round-result.tsx';
+import TrucoWaiting from './components/truco-waiting.tsx';
+import { GameState } from './types/gamestate.type';
+import { CardDTO, PlayerDTO } from '../../types/dtos.ts';
+import { useHandleGameSocket } from './hooks/handle-game-socket.ts';
 
 type GamePageProps = {
     gameId: string;
     myPlayerId: string;
     initialHand: CardDTO[];
     initialCurrentPlayer: PlayerDTO;
-}
-
-type GameState = {
-    currentPlayer: PlayerDTO | null;
-    myHand: CardDTO[];
-    playedCards: Array<{ playerId: string; card?: CardDTO; isDark: boolean }>;
-    roundValue: number;
-    trucoRequest: {
-        from: string;
-        fromName: string;
-        to: string;
-        toName: string;
-        points: number;
-    } | null;
-    isMyTurn: boolean;
-    roundEnded: boolean;
-    roundEndedData: RoundEndedDTO | null;
-}
+};
 
 const GamePage: React.FC<GamePageProps> = ({
     gameId,
@@ -42,8 +25,6 @@ const GamePage: React.FC<GamePageProps> = ({
     initialCurrentPlayer,
 }) => {
     const { username } = useGameBackgroundContext();
-    const socket = getSocketConnection();
-    const socketObject: Socket = socket.getSocketObject();
 
     const [showTrucoAccepted, setShowTrucoAccepted] = useState(false);
     const [acceptedPoints, setAcceptedPoints] = useState(0);
@@ -58,118 +39,22 @@ const GamePage: React.FC<GamePageProps> = ({
         roundEnded: false,
         roundEndedData: null,
     });
+    const {
+        enableGameSocketListener,
+        disableGameSocketListener,
+        playCard,
+        askTruco,
+        acceptTruco,
+        rejectTruco,
+    } = useHandleGameSocket(gameState, setGameState, gameId, myPlayerId);
 
     useEffect(() => {
-        socketObject.on('game:cardplayed', (data: CardPlayedDTO) => {
-            setGameState((prev) => {
-                const newPlayedCards = [
-                    ...prev.playedCards,
-                    {
-                        playerId: data.playerId,
-                        card: data.isDark ? undefined : data.card,
-                        isDark: data.isDark,
-                    },
-                ];
-
-                let newHand = prev.myHand;
-                if (data.playerId === myPlayerId && data.card) {
-                    newHand = prev.myHand.filter(
-                        (c) =>
-                            !(
-                                c.card === data.card?.card &&
-                                c.suit === data.card?.suit
-                            ),
-                    );
-                }
-
-                return {
-                    ...prev,
-                    playedCards: newPlayedCards,
-                    currentPlayer: data.currentPlayer,
-                    isMyTurn: data.currentPlayer.id === myPlayerId,
-                    myHand: newHand,
-                };
-            });
-        });
-
-        socketObject.on('game:roundended', (data: RoundEndedDTO) => {
-            setGameState((prev) => ({
-                ...prev,
-                roundEnded: true,
-                roundEndedData: data,
-            }));
-        });
-
-        socketObject.on('game:roundstarted', (data: RoundStartedDTO) => {
-            setGameState((prev) => ({
-                ...prev,
-                playedCards: [],
-                currentPlayer: data.currentPlayer,
-                isMyTurn: data.currentPlayer.id === myPlayerId,
-                roundEnded: false,
-                roundEndedData: null,
-                roundValue: 1,
-                myHand: data.myHand,
-            }));
-        });
-
-        socketObject.on('game:truco:asked', (data: TrucoAskedDTO) => {
-            setGameState((prev) => ({
-                ...prev,
-                trucoRequest: {
-                    from: data.playerFrom,
-                    fromName: data.playerFromName,
-                    to: data.playerTo,
-                    toName: data.playerToName,
-                    points: data.pointsInCaseOfAccept,
-                },
-            }));
-        });
-
-        socketObject.on('game:truco:accepted', (data: { roundValue: number }) => {
-            setGameState((prev) => ({
-                ...prev,
-                roundValue: data.roundValue,
-                trucoRequest: null,
-            }));
-        });
-
-        socketObject.on('game:truco:rejected', () => {
-            setGameState((prev) => ({
-                ...prev,
-                trucoRequest: null,
-            }));
-        });
+        enableGameSocketListener();
 
         return () => {
-            socketObject.off('game:cardplayed');
-            socketObject.off('game:roundended');
-            socketObject.off('game:roundstarted');
-            socketObject.off('game:truco:asked');
-            socketObject.off('game:truco:accepted');
-            socketObject.off('game:truco:rejected');
+            disableGameSocketListener();
         };
     }, [myPlayerId]);
-
-    const socketId = socketObject.id || '';
-
-    const playCard = (card: CardDTO, isDark: boolean = false) => {
-        if (!gameState.isMyTurn) return;
-        socket.playCard({
-            gameId,
-            socketId,
-            card,
-            isDark,
-        });
-    };
-
-    const askTruco = () => {
-        if (!gameState.isMyTurn) return;
-        socket.askTruco({
-            gameId,
-            socketId,
-        });
-    };
 
     const handleCardClick = (card: CardDTO, isDark: boolean = false) => {
         playCard(card, isDark);
@@ -183,7 +68,7 @@ const GamePage: React.FC<GamePageProps> = ({
         const points = gameState.trucoRequest?.points || 0;
         if (!gameState.trucoRequest || gameState.trucoRequest.to !== myPlayerId)
             return;
-        socket.acceptTruco({ gameId, socketId });
+        acceptTruco();
         setGameState((prev) => ({ ...prev, trucoRequest: null }));
         setAcceptedPoints(points);
         setShowTrucoAccepted(true);
@@ -193,7 +78,7 @@ const GamePage: React.FC<GamePageProps> = ({
     const handleTrucoReject = () => {
         if (!gameState.trucoRequest || gameState.trucoRequest.to !== myPlayerId)
             return;
-        socket.rejectTruco({ gameId, socketId });
+        rejectTruco();
         setGameState((prev) => ({ ...prev, trucoRequest: null }));
     };
 

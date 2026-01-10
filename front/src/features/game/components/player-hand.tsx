@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import PlayingCard from './playing-card';
-import { CardDTO } from '../types/dtos';
+import { CardDTO } from '../../../types/dtos';
 
 interface PlayerHandProps {
     cards: CardDTO[];

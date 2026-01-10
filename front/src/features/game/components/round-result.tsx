@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { RoundEndedDTO } from '../types/dtos';
+import { RoundEndedDTO } from '../game.dto';
 
 interface RoundResultProps {
     isVisible: boolean;

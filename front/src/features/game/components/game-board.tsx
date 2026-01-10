@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import PlayingCard from './playing-card';
-import { CardDTO } from '../types/dtos';
+import { CardDTO } from '../../../types/dtos';
 
 interface GameBoardProps {
     playedCards: Array<{ playerId: string; card?: CardDTO; isDark: boolean }>;

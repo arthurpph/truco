@@ -5,16 +5,17 @@ import RoomPage from '../room-page/room-page';
 import RoomView from './room-view';
 import { Room, ShowRoomInfo } from '../../../types/models';
 import getSocketConnection from '../../../lib/socket-connection';
-import AnimatedPage from '../../../components/animated-page';
 import Home from '../../home/Home';
-import ClickDiv from '../../../components/click-div';
-import LeftSign from '../../../components/left-sign';
+import ClickDiv from '../components/click-div';
+import LeftSign from '../components/left-sign';
 import ClickButton from '../../../components/click-button';
+import AnimatedPage from '../components/animated-page';
 
 const RoomsList = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
-    const [requestRoomListIntervalId, setRequestRoomListIntervalId] =
-        useState<NodeJS.Timeout | null>(null);
+    const [requestRoomListIntervalId, setRequestRoomListIntervalId] = useState<
+        number | null
+    >(null);
 
     const [showRoom, setShowRoom] = useState<ShowRoomInfo>({ show: false });
     const [showCreateRoom, setShowCreateRoom] = useState<boolean>(false);

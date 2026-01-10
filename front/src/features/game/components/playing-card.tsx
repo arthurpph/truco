@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { CardDTO } from '../types/dtos';
+import { CardDTO } from '../../../types/dtos';
 
 interface PlayingCardProps {
     card: CardDTO;

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import ClickButton from './click-button';
+import ClickButton from '../../../components/click-button';
 
 interface TrucoModalProps {
     isOpen: boolean;
