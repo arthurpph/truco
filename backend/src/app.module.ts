@@ -5,6 +5,7 @@ import { GameModule } from './game/game.module';
 import { AppGateway } from './app.gateway';
 import { RoomModule } from './room/room.module';
 import { PlayerModule } from './player/player.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
     controllers: [AppController],
@@ -13,6 +14,7 @@ import { PlayerModule } from './player/player.module';
         forwardRef(() => GameModule),
         forwardRef(() => RoomModule),
         PlayerModule,
+        AuthModule,
     ],
     exports: [AppGateway],
 })

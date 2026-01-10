@@ -1,6 +1,6 @@
 import { IsString, IsUUID } from 'class-validator';
 
-export class PlayerDtoOut {
+export class PlayerDto {
     @IsUUID()
     id: string;
 

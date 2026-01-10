@@ -1,6 +1,12 @@
-import { Player } from 'src/player/entities/player.entity';
+import { Type } from 'class-transformer';
+import { IsUUID, ValidateNested } from 'class-validator';
+import { PlayerDto } from 'src/player/dtos/player.dto.out';
 
 export class RemovePlayerDto {
+    @IsUUID()
     roomId: string;
-    player: Player;
+
+    @ValidateNested()
+    @Type(() => PlayerDto)
+    player: PlayerDto;
 }

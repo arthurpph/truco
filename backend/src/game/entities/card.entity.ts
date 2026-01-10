@@ -1,3 +1,5 @@
+import { IsIn, IsNumber } from 'class-validator';
+
 const MANILHAS = {
     zap: 10,
     copas: 9,
@@ -11,11 +13,16 @@ const CARDS = { Q: 0, J: 1, K: 2, A: 3, '2': 4, '3': 5 } as const;
 const cardKeys = Object.keys(CARDS) as (keyof typeof CARDS)[];
 const manilhaKeys = Object.keys(MANILHAS) as (keyof typeof MANILHAS)[];
 
-export type Card = {
+export class Card {
+    @IsIn([...Object.keys(CARDS), ...Object.keys(MANILHAS)])
     card: keyof typeof CARDS | keyof typeof MANILHAS;
+
+    @IsIn([...SUITS, 'manilha'])
     suit: (typeof SUITS)[number] | 'manilha';
+
+    @IsNumber()
     value: number;
-};
+}
 
 export const DECK: Card[] = [
     ...Array.from({ length: SUITS.length * cardKeys.length }, (_, i): Card => {
