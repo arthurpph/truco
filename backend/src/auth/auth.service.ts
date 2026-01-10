@@ -77,7 +77,7 @@ export class AuthService {
 
     private generateToken(username: string): string {
         return jwt.sign(
-            { username, sessionId: this.serverSessionId },
+            { username, serverSessionId: this.serverSessionId },
             this.JWT_SECRET,
             {
                 expiresIn: this.JWT_EXPIRES_IN,

@@ -27,7 +27,7 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
         try {
             const username = this.authService.verifyToken(token);
             client.data.username = username;
-        } catch {
+        } catch (error) {
             client.disconnect(true);
             return;
         }
