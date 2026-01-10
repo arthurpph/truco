@@ -1,11 +1,11 @@
-import { PlayerDtoOut } from 'src/player/dtos/player.dto.out';
+import { PlayerDto } from 'src/player/dtos/player.dto.out';
 
 export class RoomDtoOut {
     id: string;
     name: string;
     teams: [
-        [PlayerDtoOut | null, PlayerDtoOut | null],
-        [PlayerDtoOut | null, PlayerDtoOut | null],
+        [PlayerDto | null, PlayerDto | null],
+        [PlayerDto | null, PlayerDto | null],
     ];
     playersReady: string[];
 }

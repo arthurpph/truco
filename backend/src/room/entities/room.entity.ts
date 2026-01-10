@@ -1,7 +1,7 @@
 import { Player } from 'src/player/entities/player.entity';
 import { RoomDtoOut } from '../dtos/room.dto.out';
 import { Team, Teams } from 'src/shared/entities/team.entity';
-import { PlayerDtoOut } from 'src/player/dtos/player.dto.out';
+import { PlayerDto } from 'src/player/dtos/player.dto.out';
 
 export class Room {
     id: string;
@@ -80,8 +80,8 @@ export class Room {
         const formatTeam = (team: Team<Player>) => {
             const p = team.players;
             return [p[0] ? p[0].toDto() : null, p[1] ? p[1].toDto() : null] as [
-                PlayerDtoOut | null,
-                PlayerDtoOut | null,
+                PlayerDto | null,
+                PlayerDto | null,
             ];
         };
 

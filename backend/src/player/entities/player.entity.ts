@@ -1,4 +1,4 @@
-import { PlayerDtoOut } from '../dtos/player.dto.out';
+import { PlayerDto } from '../dtos/player.dto.out';
 
 export class Player {
     id: string;
@@ -11,7 +11,7 @@ export class Player {
         this.socketId = socketId;
     }
 
-    toDto(): PlayerDtoOut {
+    toDto(): PlayerDto {
         return {
             id: this.id,
             name: this.name,
