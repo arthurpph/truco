@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 
@@ -32,7 +32,7 @@ export class AuthService {
             );
 
             if (!isPasswordValid) {
-                throw new Error('Senha incorreta');
+                throw new UnauthorizedException('Invalid credentials');
             }
         } else {
             const passwordHash = await bcrypt.hash(password, 10);
@@ -49,7 +49,7 @@ export class AuthService {
             };
             return decoded.username;
         } catch (error) {
-            throw new Error('Token inválido ou expirado');
+            throw new UnauthorizedException('Invalid or expired token');
         }
     }
 

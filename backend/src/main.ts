@@ -4,6 +4,11 @@ import 'dotenv/config';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
+    if (!process.env.JWT_SECRET) {
+        console.error('JWT_SECRET not defined in .env');
+        process.exit(1);
+    }
+
     const app = await NestFactory.create(AppModule);
     app.useGlobalPipes(
         new ValidationPipe({

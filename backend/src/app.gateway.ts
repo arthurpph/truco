@@ -7,6 +7,7 @@ import {
 import { Socket, Server } from 'socket.io';
 import { RoomService } from './room/room.service';
 import { PlayerService } from './player/player.service';
+import { AuthService } from './auth/auth.service';
 
 @WebSocketGateway({ cors: { origin: 'http://localhost:5173' } })
 export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -16,11 +17,21 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private clients = new Map<string, Socket>();
 
     constructor(
+        private readonly authService: AuthService,
         private readonly roomService: RoomService,
         private readonly playerService: PlayerService,
     ) {}
 
     handleConnection(client: Socket) {
+        const token = client.handshake.auth?.token;
+        try {
+            const username = this.authService.verifyToken(token);
+            client.data.username = username;
+        } catch {
+            client.disconnect(true);
+            return;
+        }
+
         this.clients.set(client.id, client);
     }
 
