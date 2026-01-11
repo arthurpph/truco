@@ -12,6 +12,7 @@ import { RoundEndedDtoOut } from './dtos/round-ended.dto.out';
 import { RoundStartedDtoOut } from './dtos/round-started.dto.out';
 import { RoundHistory } from './types/game.type';
 import { GameInitializedDtoOut } from './dtos/game-initialized.dto.out';
+import { GameEndedDtoOut } from './dtos/game-ended.dto.out';
 
 type EventOut =
     | 'game:initialized'
@@ -20,7 +21,8 @@ type EventOut =
     | 'game:truco:accepted'
     | 'game:truco:rejected'
     | 'game:roundended'
-    | 'game:roundstarted';
+    | 'game:roundstarted'
+    | 'game:ended';
 
 @Injectable()
 export class GameService {
@@ -52,11 +54,23 @@ export class GameService {
             game,
             'game:initialized',
             (player) => {
+                const scores = game.getScores();
                 const gameInitializedDtoOut: GameInitializedDtoOut = {
                     gameId: game.id,
                     myPlayerId: player.id,
                     myHand: player.hand,
                     currentPlayer: game.getCurrentPlayer().toDto(),
+                    team1: {
+                        id: scores.team1.id,
+                        players: scores.team1.players.map((p) => p.toDto()),
+                    },
+                    team2: {
+                        id: scores.team2.id,
+                        players: scores.team2.players.map((p) => p.toDto()),
+                    },
+                    team1Score: scores.team1Score,
+                    team2Score: scores.team2Score,
+                    maxScore: game.WIN_SCORE,
                 };
                 return gameInitializedDtoOut;
             },
@@ -123,7 +137,7 @@ export class GameService {
         const trucoStatus = game.trucoAccept();
         if (!trucoStatus || trucoStatus.onGoing) return;
         this.broadcastStateUpdate(game, 'game:truco:accepted', {
-            roundValue: game.getRoundValue(),
+            roundValue: game.currentRoundValue,
         });
     }
 
@@ -162,11 +176,20 @@ export class GameService {
         game: Game,
         playCardResult: RoundHistory<PlayerGame>,
     ) {
+        const { team1Score, team2Score, currentRoundValue } = game;
         const { draw, cardsPlayed } = playCardResult;
+        const scores = game.getScores();
 
         let roundEndedDtoOut: RoundEndedDtoOut;
         if (draw) {
-            roundEndedDtoOut = { draw, cardsPlayed, teamWinner: null };
+            roundEndedDtoOut = {
+                draw,
+                cardsPlayed,
+                teamWinner: null,
+                team1Score,
+                team2Score,
+                pointsWon: currentRoundValue,
+            };
         } else {
             const { teamWinner } = playCardResult;
             const teamWinnerDto = {
@@ -180,10 +203,35 @@ export class GameService {
                 draw,
                 cardsPlayed,
                 teamWinner: teamWinnerDto,
+                team1Score,
+                team2Score,
+                pointsWon: currentRoundValue,
             };
         }
 
         this.broadcastStateUpdate(game, 'game:roundended', roundEndedDtoOut);
+
+        const gameEndedCheck = game.checkGameEnded();
+        if (gameEndedCheck.ended && gameEndedCheck.winner) {
+            setTimeout(() => {
+                const gameEndedDto: GameEndedDtoOut = {
+                    gameId: game.id,
+                    winnerTeam: {
+                        id: gameEndedCheck.winner!.id,
+                        players: gameEndedCheck.winner!.players.map((p) => ({
+                            id: p.id,
+                            name: p.name,
+                        })),
+                    },
+                    team1Score: scores.team1Score,
+                    team2Score: scores.team2Score,
+                };
+                this.broadcastStateUpdate(game, 'game:ended', gameEndedDto);
+                setTimeout(() => this.games.delete(game.id), 10000);
+            }, 6000);
+            return;
+        }
+
         setTimeout(() => {
             game.startNewRound();
 
@@ -194,6 +242,8 @@ export class GameService {
                     const roundStartedDtoOut: RoundStartedDtoOut = {
                         currentPlayer: game.getCurrentPlayer().toDto(),
                         myHand: player.hand,
+                        team1Score,
+                        team2Score,
                     };
                     return roundStartedDtoOut;
                 },

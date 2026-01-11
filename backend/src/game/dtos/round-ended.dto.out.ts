@@ -8,4 +8,7 @@ export class RoundEndedDtoOut {
         players: PlayerDto[];
     } | null;
     cardsPlayed: RoundCardPlayed[];
+    team1Score: number;
+    team2Score: number;
+    pointsWon: number;
 }

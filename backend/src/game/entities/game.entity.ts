@@ -10,9 +10,14 @@ import {
 } from '../types/game.type';
 
 export class Game {
+    WIN_SCORE = 12;
+
     id: string;
     players: PlayerGame[];
     startedAt: Date;
+    currentRoundValue: RoundValues;
+    team1Score: number = 0;
+    team2Score: number = 0;
 
     private teams: Teams<PlayerGame>;
     private roundStatus: RoundStatus;
@@ -20,7 +25,6 @@ export class Game {
     private currentPlayerIndexRound: number;
     private currentPlayerIndex: number;
     private currentRoundCounter: number;
-    private currentRoundValue: RoundValues;
     private trucoStatus: TrucoStatus = { onGoing: false };
 
     constructor(id: string, teams: Teams<PlayerGame>) {
@@ -140,8 +144,13 @@ export class Game {
         return this.players[this.currentPlayerIndex];
     }
 
-    getRoundValue(): RoundValues {
-        return this.currentRoundValue;
+    getScores() {
+        return {
+            team1Score: this.team1Score,
+            team2Score: this.team2Score,
+            team1: this.teams[0],
+            team2: this.teams[1],
+        };
     }
 
     startNewRound(): void {
@@ -151,8 +160,27 @@ export class Game {
         this.shuffleAndGiveCards();
     }
 
+    checkGameEnded(): { ended: boolean; winner?: Team<PlayerGame> } {
+        if (this.team1Score >= this.WIN_SCORE) {
+            return { ended: true, winner: this.teams[0] };
+        }
+        if (this.team2Score >= this.WIN_SCORE) {
+            return { ended: true, winner: this.teams[1] };
+        }
+        return { ended: false };
+    }
+
     private roundEnded(): RoundHistory<PlayerGame> {
         const teamWinner = this.checkRoundWinner();
+
+        if (teamWinner) {
+            if (teamWinner.id === this.teams[0].id) {
+                this.team1Score += this.currentRoundValue;
+            } else if (teamWinner.id === this.teams[1].id) {
+                this.team2Score += this.currentRoundValue;
+            }
+        }
+
         const roundHistoryData: RoundHistory<PlayerGame> = {
             draw: teamWinner === undefined,
             roundNumber: this.roundStatus.roundNumber,
