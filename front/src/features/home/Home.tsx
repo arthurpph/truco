@@ -1,29 +1,78 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useGameBackgroundContext } from '../../contexts/ui-context';
 import RoomsList from '../room/rooms-list/rooms-list';
 import AnimatedPage from './components/animated-page';
+import { authAdapter } from './adapters/auth.adapter';
+import getSocketConnection from '@/lib/socket-connection';
+import { AuthResponseDTO } from '@/types/dtos';
 
 const Home = () => {
     const { setUsername: setContextUsername } = useGameBackgroundContext();
 
     const [showRoomsComponent, setShowRoomsComponent] = useState(false);
     const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState(false);
 
-    const handlePlayClick = () => {
-        if (username.trim() === '') {
+    const socket = getSocketConnection();
+
+    const handleAuthClick = async () => {
+        if (username.trim() === '' || password.trim() === '') {
             setError(true);
             return;
         }
-        setContextUsername(username.trim());
+        let authResponse;
+        try {
+            authResponse = await handleAuth();
+        } catch {
+            return;
+        }
+        setContextUsername(authResponse.username.trim());
         setShowRoomsComponent(true);
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAuth = async (): Promise<AuthResponseDTO> => {
+        const authResponse = await authAdapter.authenticate(username, password);
+        socket.startConnection(authResponse.token);
+        localStorage.setItem('auth-token', authResponse.token);
+        return authResponse;
+    };
+
+    const handleUsernameInputChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+    ) => {
         setUsername(e.target.value);
         setError(false);
     };
+
+    const handlePasswordInputChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+        setPassword(e.target.value);
+        setError(false);
+    };
+
+    useEffect(() => {
+        const checkActiveToken = async () => {
+            const tokenStorageKey = 'auth-token';
+            const token = localStorage.getItem(tokenStorageKey);
+            if (!token) return;
+            try {
+                const isTokenValid = await authAdapter.verifyToken(token);
+                if (!isTokenValid) {
+                    localStorage.removeItem(tokenStorageKey);
+                    return;
+                }
+            } catch {
+                return;
+            }
+            socket.startConnection(token);
+            setShowRoomsComponent(true);
+        };
+
+        checkActiveToken();
+    }, []);
 
     return (
         <div className="relative w-full h-full overflow-hidden">
@@ -64,10 +113,10 @@ const Home = () => {
                                         <input
                                             type="text"
                                             value={username}
-                                            onChange={handleInputChange}
-                                            onKeyPress={(e) =>
+                                            onChange={handleUsernameInputChange}
+                                            onKeyDown={(e) =>
                                                 e.key === 'Enter' &&
-                                                handlePlayClick()
+                                                handleAuthClick()
                                             }
                                             placeholder="Digite seu nome"
                                             className={`w-full h-14 px-4 bg-emerald-950/60 text-white text-lg rounded-lg
@@ -84,8 +133,35 @@ const Home = () => {
                                         )}
                                     </div>
 
+                                    <div className="mb-5">
+                                        <label className="block text-amber-100 text-sm mb-2 font-medium">
+                                            Senha
+                                        </label>
+                                        <input
+                                            type="password"
+                                            value={password}
+                                            onChange={handlePasswordInputChange}
+                                            onKeyDown={(e) =>
+                                                e.key === 'Enter' &&
+                                                handleAuthClick()
+                                            }
+                                            placeholder="Digite sua senha"
+                                            className={`w-full h-14 px-4 bg-emerald-950/60 text-white text-lg rounded-lg
+                        border-2 ${
+                            error ? 'border-red-500' : 'border-emerald-600/50'
+                        }
+                        focus:border-amber-500 focus:outline-none transition-colors
+                        placeholder:text-emerald-600`}
+                                        />
+                                        {error && (
+                                            <p className="text-red-400 text-xs mt-2">
+                                                Por favor, insira sua senha
+                                            </p>
+                                        )}
+                                    </div>
+
                                     <button
-                                        onClick={handlePlayClick}
+                                        onClick={handleAuthClick}
                                         className="w-full h-14 bg-amber-500 hover:bg-amber-400 text-emerald-950 
                       font-bold text-lg rounded-lg transition-colors uppercase tracking-wide"
                                     >

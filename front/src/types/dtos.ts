@@ -1,3 +1,8 @@
+export type AuthResponseDTO = {
+    token: string;
+    username: string;
+};
+
 export type CreateRoomDTO = {
     roomName: string;
     playerName: string;

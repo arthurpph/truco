@@ -18,10 +18,21 @@ export default function getSocketConnection() {
 }
 
 class SocketConnection {
-    private socket: Socket;
+    private url: string;
+    private socket!: Socket;
 
     constructor(url: string) {
-        this.socket = io(url);
+        this.url = url;
+    }
+
+    public startConnection(token: string): void {
+        if (this.socket) {
+            return;
+        }
+
+        this.socket = io(this.url, {
+            auth: { token },
+        });
 
         this.socket.on('connectionTest', () => {
             this.socket.emit('connectionReceived');
